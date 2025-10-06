@@ -1,9 +1,11 @@
-use surrealdb::engine::remote::ws::Ws;
-use surrealdb::opt::auth::Root;
-use surrealdb::Surreal;
-use serde::{Serialize, Deserialize};
+use std::fmt::format;
+
 use dialoguer::{Input, Select};
 use rpassword::read_password;
+use serde::{Deserialize, Serialize};
+use surrealdb::Surreal;
+use surrealdb::engine::remote::ws::{Client, Ws};
+use surrealdb::opt::auth::Root;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -18,10 +20,69 @@ struct JournalEntry {
     id: Option<surrealdb::RecordId>,
     user: String,
     title: String,
-    content: String, 
+    content: String,
 }
 
 #[tokio::main]
 async fn main() {
-    println!("Wrlcome to secure Journal app..");
+    println!("Welcome to secure Journal app..");
+
+    let db = Surreal::new::<Ws>("localhost:8000").await.unwrap();
+    let _ = db
+        .signin(Root {
+            username: "root",
+            password: "secret",
+        })
+        .await;
+    db.use_ns("journal").use_db("database").await.unwrap();
+
+    loop {
+        let options = vec!["Login", "Create account", "Exit"];
+        let selection = Select::new()
+            .with_prompt("what would you like to do..")
+            .items(&options)
+            .default(0)
+            .interact()
+            .unwrap();
+        match selection {
+            0 => login_flow(&db),
+            1 => login_flow(&db),
+            _ => {
+                println!("goodbye..!");
+                break;
+            }
+        };
+    }
+}
+
+async fn login_flow(db: &Surreal<Client>) -> surrealdb::Result<()> {
+    let username = Input::<String>::new()
+        .with_prompt("Username")
+        .interact()
+        .unwrap();
+
+    println!("password");
+    let password = read_password().unwrap();
+
+    let query = format!("SELECT * FROM user where usernmae={:?}", username);
+    let mut response = db.query(query).await?;
+    let users: Option<Vec<User>> = response.take(0)?;
+
+    if let Some(users) = users {
+    if let Some(user) = users.first() {
+        if user.password == password {
+            println!("✅ Login successful! Welcome, {}.", username);
+            // journal_menu().await?;
+        } else {
+            println!("incorrect password.");
+        }
+    } else {
+        println!("user not found..");
+    }
+} else {
+    println!("no user data returned from databse..");
+}
+
+
+    Ok(())
 }
