@@ -19,7 +19,7 @@ pub struct JournalEntry {
 
 // #[derive(Debug, Serialize, Deserialize, Clone)]
 #[derive(Debug, Clone)]
-pub struct AppState {
+pub struct _AppState {
     pub db: Surreal<Client>, 
     pub curr_usr: Option<User>, 
 }

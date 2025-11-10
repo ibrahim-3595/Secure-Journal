@@ -1,4 +1,3 @@
-// use anyhow::Ok;
 use colored::Colorize;
 use dialoguer::Select;
 use surrealdb::Surreal;
