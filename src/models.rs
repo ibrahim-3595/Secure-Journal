@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use surrealdb::Surreal;
+use surrealdb::engine::remote::ws::Client;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
@@ -8,9 +10,16 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct _JournalEntry {
+pub struct JournalEntry {
     pub id: Option<surrealdb::RecordId>,
     pub user: String,
     pub title: String,
     pub content: String,
+}
+
+// #[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
+pub struct AppState {
+    pub db: Surreal<Client>, 
+    pub curr_usr: Option<User>, 
 }
