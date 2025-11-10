@@ -64,7 +64,7 @@ async fn login_flow(db: &Surreal<Client>) -> surrealdb::Result<()> {
     println!("password");
     let password = read_password().unwrap();
 
-    let query = format!("Select * from user where usernmae ={:?}", username);
+    let query = format!("Select * from user where username ={:?}", username);
     let mut response = db.query(query).await?;
     let users: Option<Vec<User>> = response.take(0)?;
 
@@ -83,5 +83,15 @@ async fn login_flow(db: &Surreal<Client>) -> surrealdb::Result<()> {
         println!("no user data returned from databse..");
     }
 
+    Ok(())
+}
+
+async fn list_users(db: Surreal<Client>) -> surrealdb::Result<()> {
+    let mut respose = db.query("select username from user").await;
+    let users: Vec<User> = respose.iter().take(0)?;
+    println!("registered user..");
+    for usr in users {
+        println!("- {:?}", usr.username);
+    }
     Ok(())
 }
