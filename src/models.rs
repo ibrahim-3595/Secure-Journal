@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
@@ -9,7 +8,7 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct JournalEntry {
+pub struct _JournalEntry {
     pub id: Option<surrealdb::RecordId>,
     pub user: String,
     pub title: String,

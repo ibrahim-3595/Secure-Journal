@@ -1,13 +1,11 @@
-use argon2::{Argon2, PasswordHasher, PasswordVerifier};
-use argon2::password_hash::{SaltString, PasswordHash};
 use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::{PasswordHash, SaltString};
+use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 
-use rpassword::read_password;
 use dialoguer::Input;
+use rpassword::read_password;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
-
-// use rand::rngs::OsRng;
 
 use crate::models::User;
 
@@ -28,7 +26,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> surrealdb::Result<()> {
         .to_string();
 
     //insert
-    db.create("user")
+    let _: Option<User> = db.create("user")
         .content(User {
             username,
             password: hashed,
