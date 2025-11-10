@@ -47,6 +47,7 @@ async fn main() {
         match selection {
             0 => login_flow(&db),
             1 => login_flow(&db),
+            2 => list_users(&db),
             _ => {
                 println!("goodbye..!");
                 break;
@@ -87,11 +88,12 @@ async fn login_flow(db: &Surreal<Client>) -> surrealdb::Result<()> {
 }
 
 async fn list_users(db: Surreal<Client>) -> surrealdb::Result<()> {
-    let mut respose = db.query("select username from user").await;
-    let users: Vec<User> = respose.iter().take(0)?;
+    let mut response = db.query("select username from user").await?;
+    let users: Vec<User> = response.take(0)?;
     println!("registered user..");
     for usr in users {
         println!("- {:?}", usr.username);
     }
     Ok(())
 }
+
