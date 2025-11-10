@@ -1,10 +1,17 @@
+// use anyhow::Ok;
+use colored::Colorize;
 use dialoguer::Select;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
+use std::result::Result::Ok;
+
 use crate::auth::{list_entries, list_users, login_flow, new_entry, signup_flow};
+use crate::models::User;
 
 pub async fn main_menu(db: &Surreal<Client>) {
+    let mut curr_usr: Option<User> = None;
+
     loop {
         let options = vec![
             "Login",
@@ -15,24 +22,52 @@ pub async fn main_menu(db: &Surreal<Client>) {
             "Exit",
         ];
         let selection = Select::new()
-            .with_prompt("what would you like to do..")
+            .with_prompt("what would you like to do..?")
             .items(&options)
             .default(0)
             .interact()
             .unwrap();
         let result = match selection {
-            0 => login_flow(&db).await,
+            0 => match login_flow(&db).await {
+                Ok(Some(user)) => {
+                    println!("{}", format!("logged in as {}", user.username).green());
+                    curr_usr = Some(user);
+                    Ok(())
+                }
+                Ok(None) => Ok(()),
+                Err(e) => Err(e),
+            },
             1 => signup_flow(&db).await,
             2 => list_users(&db).await,
-            3 => new_entry(&db, ), //queue
-            4 => list_entries(&db, ), //queue
-            _ => {
-                println!("goodbye..!");
-                break;
+            3 => {
+                if let Some(user) = &curr_usr {
+                    new_entry(&db, user).await
+                } else {
+                    println!("{}", "please login first..".red());
+                    Ok(())
+                }
             }
+            4 => {
+                if let Some(user) = &curr_usr {
+                    list_entries(&db, user).await
+                } else {
+                    println!("{}", "please login first..".red());
+                    Ok(())
+                }
+            }
+            5 => {
+                curr_usr = None;
+                println!("{}", "logged out..!".bright_yellow());
+                Ok(())
+            }
+            6 => {
+                println!("{}", "goodbye..!".cyan());
+                return;
+            }
+            _ => Ok(()),
         };
         if let Err(e) = result {
-            eprintln!(" error : {:?}", e);
+            eprintln!("{}", "error: {e:?}".bright_red());
         }
     }
 }
