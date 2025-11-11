@@ -21,7 +21,22 @@ pub async fn validate_creds(username: &str, password: &str) -> Result<()> {
         anyhow::bail!("username cannot contain spaces");
     }
     
-    
+    // password check
+    if password.len() < 6 {
+        anyhow::bail!("password must be at least 6 chars long..");
+    }
+    if !password.chars().any(|c| c.is_uppercase()) {
+        anyhow::bail!("password must include at least one uppercase char..");
+    }
+    if !password.chars().any(|c| c.is_lowercase()) {
+        anyhow::bail!("password must include at least one lowercase char..");
+    }
+    if !password.chars().any(|c| c.is_ascii_digit()) {
+        anyhow::bail!("password must include at least one number..");
+    }
+    if !password.chars().any(|c| "!@#$%^&*()-_=+[]{};:,.<>?".contains(c)) {
+        anyhow::bail!("password must include at least one special character..");
+    }
     
     Ok(())
 }
