@@ -5,6 +5,8 @@ use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 use anyhow::{Ok, Result};
 use colored::*;
 use dialoguer::Input;
+use indicatif::{ProgressBar, ProgressStyle};
+use std::time::Duration;
 use rpassword::read_password;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
@@ -61,10 +63,10 @@ fn validate_creds(username: &str, password: &str) -> Result<()> {
 pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     //create new user
     let username = Input::<String>::new()
-        .with_prompt("choose a username..")
+        .with_prompt("choose a username")
         .interact()
         .map_err(|e| anyhow::anyhow!("input error: {e}"))?;
-    println!("choose a password..");
+    println!("choose a password");
     let password = read_password().unwrap();
 
     //val_creds
@@ -72,6 +74,9 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
         println!("{}", format!("{}", e).bright_red());
         return Ok(());
     }
+    
+    //spinners&progress-bars
+    
 
     //check if user exists
     let check_query = format!("select * from user where username = {:?}", username);
@@ -80,7 +85,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     if !existing.is_empty() {
         println!(
             "{}",
-            "username already exists..plz choose another one!!".bright_red()
+            "username already exists..please choose another one!!".bright_red()
         );
         return Ok(());
     }

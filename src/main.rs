@@ -12,7 +12,6 @@ async fn main() {
 }
 
 //tomorrow's tasks:
-// validation for username and password eg if username.isempty and password < 8 chars 
 // spinners & progress indicators using indicatif
 // add delete method to delete a user or a journal entry 
 // organized menu (optional)
