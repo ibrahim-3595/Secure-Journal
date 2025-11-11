@@ -12,11 +12,23 @@ async fn main() {
 }
 
 //tomorrow's tasks:
-// add delete method to delete a user or a journal entry
+// create the working dir like this..
+// src/
+// ├── auth/
+// │   ├── mod.rs          # re-exports everything
+// │   ├── login.rs
+// │   ├── signup.rs
+// │   ├── delete.rs
+// │   └── validate.rs
+// ├── db/
+// │   ├── mod.rs
+// │   └── connection.rs
+// ├── common/
+// │   ├── error.rs
+// │   └── utils.rs
 // organized menu (optional)
 // 
 // database and storage enchancements like timestamps, tags, soft delete
-// modules for entries.rs & utils.rs
 // export journal to .md or .pdf using pdf crate
 // sync journal enteries with cloud storage or self-hosted server
 // integrate axum which integrates with surrealdb

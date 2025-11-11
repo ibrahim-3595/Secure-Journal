@@ -2,6 +2,8 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{PasswordHash, SaltString};
 use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 
+// use crate::common::error::{AppError, Result};
+
 use anyhow::{Ok, Result};
 use colored::*;
 use dialoguer::{Confirm, Input};
