@@ -9,39 +9,54 @@ use rpassword::read_password;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
-pub async fn validate_creds(username: &str, password: &str) -> Result<()> {
+use crate::models::{JournalEntry, User};
+
+fn validate_creds(username: &str, password: &str) -> Result<()> {
     // usernmane check
     if username.trim().is_empty() {
         anyhow::bail!("{}", "usernmae cannot be empty..".yellow());
     }
     if username.len() < 3 && username.len() > 20 {
-        anyhow::bail!("{}", "the len of the name is not valid..plz try again!".yellow());
+        anyhow::bail!(
+            "{}",
+            "the len of the name is not valid..plz try again!".yellow()
+        );
     }
     if username.contains(' ') {
         anyhow::bail!("{}", "username cannot contain spaces".yellow());
     }
-    
+
     // password check
     if password.len() < 6 {
         anyhow::bail!("{}", "password must be at least 6 chars long..".yellow());
     }
     if !password.chars().any(|c| c.is_uppercase()) {
-        anyhow::bail!("{}", "password must include at least one uppercase char..".yellow());
+        anyhow::bail!(
+            "{}",
+            "password must include at least one uppercase char..".yellow()
+        );
     }
     if !password.chars().any(|c| c.is_lowercase()) {
-        anyhow::bail!("{}", "password must include at least one lowercase char..".yellow());
+        anyhow::bail!(
+            "{}",
+            "password must include at least one lowercase char..".yellow()
+        );
     }
     if !password.chars().any(|c| c.is_ascii_digit()) {
         anyhow::bail!("{}", "password must include at least one number..".yellow());
     }
-    if !password.chars().any(|c| "!@#$%^&*()-_=+[]{};:,.<>?".contains(c)) {
-        anyhow::bail!("{}", "password must include at least one special character..".yellow());
+    if !password
+        .chars()
+        .any(|c| "!@#$%^&*()-_=+[]{};:,.<>?".contains(c))
+    {
+        anyhow::bail!(
+            "{}",
+            "password must include at least one special character..".yellow()
+        );
     }
-    
+
     Ok(())
 }
-
-use crate::models::{JournalEntry, User};
 
 pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     //create new user
@@ -52,6 +67,12 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     println!("choose a password..");
     let password = read_password().unwrap();
 
+    //val_creds
+    if let Err(e) = validate_creds(&username, &password) {
+        println!("{}", format!("{}", e).bright_red());
+        return Ok(());
+    }
+
     //check if user exists
     let check_query = format!("select * from user where username = {:?}", username);
     let mut check = db.query(check_query).await?;
@@ -59,7 +80,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     if !existing.is_empty() {
         println!(
             "{}",
-            "⚠️ Username already exists! Please choose another.".bright_red()
+            "username already exists..plz choose another one!!".bright_red()
         );
         return Ok(());
     }
@@ -104,6 +125,15 @@ pub async fn login_flow(db: &Surreal<Client>) -> Result<Option<User>> {
 
     println!("password:");
     let password = read_password().unwrap();
+
+    // val_check
+    if username.trim().is_empty() || password.is_empty() {
+        println!(
+            "{}",
+            "username or password cannot be empty...".bright_red()
+        );
+        return Ok(None);
+    }
 
     let query = format!("select * from user where username = {:?}", username);
     let mut response = db.query(query).await?;
