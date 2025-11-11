@@ -4,7 +4,7 @@ use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 
 use anyhow::{Ok, Result};
 use colored::*;
-use dialoguer::Input;
+use dialoguer::{Confirm, Input};
 use indicatif::{ProgressBar, ProgressStyle};
 use rpassword::read_password;
 use std::time::Duration;
@@ -235,6 +235,35 @@ pub async fn list_users(db: &Surreal<Client>) -> Result<()> {
 
     Ok(())
 }
+pub async fn delete_user(db: &Surreal<Client>, user: &User) -> Result<()> {
+    let confirm = Confirm::new()
+        .with_prompt(format!(
+            "are you sure you wanna delete '{}' and all their entries..?",
+            user.username
+        ))
+        .default(false)
+        .interact()
+        .unwrap();
+    if !confirm {
+        println!("{}", "deletion cancelled..".yellow());
+        return Ok(());
+    }
+
+    //del usr
+    let query_user = format!("delete user where username = {:?}", user.username);
+    db.query(query_user).await?;
+
+    //del journal entry
+    let query_entries = format!("delete entry where user = {:?}", user.username);
+    db.query(query_entries).await?;
+
+    println!(
+        "{}",
+        "user and all their entries are deleted successfully..".green()
+    );
+
+    Ok(())
+}
 
 pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
     let title = Input::<String>::new()
@@ -256,6 +285,41 @@ pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
         })
         .await?;
     println!("{}", "journal entry has been saved..".green());
+
+    Ok(())
+}
+pub async fn delete_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
+    let query = format!("select * from entry where user = {:?}", user.username);
+    let mut resp = db.query(query).await?;
+    let entries: Vec<JournalEntry> = resp.take(0)?;
+
+    if entries.is_empty() {
+        println!("{}", "no entries to delete..".red());
+        return Ok(());
+    }
+
+    println!("your journal entries..");
+    for (i, entry) in entries.iter().enumerate() {
+        println!("{}. {} - {}", i + 1, entry.title, entry.content);
+    }
+
+    let index = Input::<usize>::new()
+        .with_prompt("enter the num of entires to delete..")
+        .interact()
+        .unwrap();
+    if index == 0 || index > entries.len() {
+        println!("{}", "invalid entry number..".red());
+        return Ok(());
+    }
+
+    let entry_to_delete = &entries[index - 1];
+    if let Some(id) = &entry_to_delete.id {
+        let delete_query = format!("delete {}", id);
+        db.query(delete_query).await?;
+        println!("{}", "journal entry deleted successfully..".green());
+    } else {
+        println!("{}", "err: entry has no valid ID.".red());
+    }
 
     Ok(())
 }

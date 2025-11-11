@@ -5,7 +5,9 @@ use surrealdb::engine::remote::ws::Client;
 
 use std::result::Result::Ok;
 
-use crate::auth::{list_entries, list_users, login_flow, new_entry, signup_flow};
+use crate::auth::{
+    delete_entry, delete_user, list_entries, list_users, login_flow, new_entry, signup_flow,
+};
 use crate::models::User;
 
 pub async fn main_menu(db: &Surreal<Client>) {
@@ -18,6 +20,8 @@ pub async fn main_menu(db: &Surreal<Client>) {
             "List Users",
             "Write a new journal entry",
             "View my journal entries",
+            "Delete a journal entry",
+            "Delete my account",
             "Logout",
             "Exit",
         ];
@@ -56,11 +60,28 @@ pub async fn main_menu(db: &Surreal<Client>) {
                 }
             }
             5 => {
+                if let Some(user) = &curr_usr {
+                    delete_entry(&db, user).await
+                } else {
+                    println!("{}", "please login first..".red());
+                    Ok(())
+                }
+            }
+            6 => {
+                if let Some(user) = &curr_usr {
+                    delete_user(&db, user).await;
+                    curr_usr = None;
+                } else {
+                    println!("{}", "please login first..".red());
+                }
+                Ok(())
+            }
+            7 => {
                 curr_usr = None;
                 println!("{}", "logged out..!".bright_yellow());
                 Ok(())
             }
-            6 => {
+            8 => {
                 println!("{}", "goodbye..!".cyan());
                 return;
             }
