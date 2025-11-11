@@ -71,45 +71,17 @@ Your password is hashed with **Argon2**, and entries are encrypted using **rpass
 
 ---
 
-## 🧭 Usage
-
-* **Create a new entry:**
-
-  ```bash
-  journal new
-  ```
-* **View all entries:**
-
-  ```bash
-  journal list
-  ```
-* **Search for an entry:**
-
-  ```bash
-  journal find "keyword"
-  ```
-* **Delete an entry:**
-
-  ```bash
-  journal delete <id>
-  ```
-
-> 🪶 *All actions are securely verified using your master password.*
-
----
-
 ## 🧱 Project Structure
 
 ```
 secure-journal/
 │
 ├── src/
-│   ├── main.rs          # Entry point
-│   ├── journal.rs       # Core journaling logic
-│   ├── encryption.rs    # Password hashing & encryption utilities
-│   ├── db.rs            # SurrealDB integration
-│   ├── cli.rs           # Colorized CLI interface
-│   └── errors.rs        # Error handling with anyhow
+│   ├── main.rs
+│   ├── auth.rs
+│   ├── db.rs
+│   ├── menu.rs
+│   └── models.rs
 │
 ├── Cargo.toml
 └── README.md
@@ -120,9 +92,10 @@ secure-journal/
 ## 🔮 Future Plans
 
 * [ ] Encrypted cloud sync option
-* [ ] Markdown support for entries
-* [ ] Tagging and search improvements
-* [ ] Secure export/import functionality
+* [ ] Databse and Storage enhancements
+* [ ] Exporting journal as .pdf or .md
+* [ ] Integrating Axum
+* [ ] Adding a UI framework like Yew/Dioxus
 
 ---
 
@@ -135,7 +108,3 @@ secure-journal/
 ## 🛠️ License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
-
-Would you like me to make it **GitHub-optimized** (with badges, banner, emojis, and color sections) or **terminal-friendly** (looks good in plain text and docs.rs)?
