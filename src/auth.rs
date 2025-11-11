@@ -6,8 +6,8 @@ use anyhow::{Ok, Result};
 use colored::*;
 use dialoguer::Input;
 use indicatif::{ProgressBar, ProgressStyle};
-use std::time::Duration;
 use rpassword::read_password;
+use std::time::Duration;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
@@ -74,14 +74,23 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
         println!("{}", format!("{}", e).bright_red());
         return Ok(());
     }
-    
+
     //spinners&progress-bars
-    
+    let spinner = ProgressBar::new_spinner();
+    spinner.set_message("checking if username is available..");
+    spinner.enable_steady_tick(Duration::from_millis(100));
+    spinner.set_style(
+        ProgressStyle::default_spinner()
+            .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
+            .template("{spinner:.green} {msg}")
+            .unwrap(),
+    );
 
     //check if user exists
     let check_query = format!("select * from user where username = {:?}", username);
     let mut check = db.query(check_query).await?;
     let existing: Vec<User> = check.take(0)?;
+    spinner.finish_and_clear();
     if !existing.is_empty() {
         println!(
             "{}",
@@ -98,6 +107,21 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
         return Ok(());
     }
 
+    //hashing progress..
+    let bar = ProgressBar::new(100);
+    bar.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.blue} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}% - {msg}",
+        )
+        .unwrap()
+        .progress_chars("=>-"),
+    );
+    bar.set_message("hasing password securely..");
+    for i in 0..100 {
+        bar.set_position(i);
+        std::thread::sleep(Duration::from_millis(10));
+    }
+
     //hashing..
     let mut rng = OsRng;
     let salt = SaltString::generate(&mut rng);
@@ -105,8 +129,18 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
         .hash_password(password.as_bytes(), &salt)
         .unwrap()
         .to_string();
+    bar.finish_with_message("password hashed successfully..");
 
     //insert..
+    let spinner = ProgressBar::new_spinner();
+    spinner.set_message("created your acc..");
+    spinner.enable_steady_tick(Duration::from_millis(100));
+    spinner.set_style(
+        ProgressStyle::default_spinner()
+            .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
+            .template("{spinner:.green} {msg}")
+            .unwrap(),
+    );
     let _: Option<User> = db
         .create("user")
         .content(User {
@@ -115,7 +149,8 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
             id: None,
         })
         .await
-        .map_err(|e| anyhow::anyhow!("input error: {e}"))?;
+        .map_err(|e| anyhow::anyhow!("databse error: {e}"))?;
+    spinner.finish_and_clear();
     println!("{}", "account created successfully..".green());
 
     Ok(())
@@ -133,16 +168,25 @@ pub async fn login_flow(db: &Surreal<Client>) -> Result<Option<User>> {
 
     // val_check
     if username.trim().is_empty() || password.is_empty() {
-        println!(
-            "{}",
-            "username or password cannot be empty...".bright_red()
-        );
+        println!("{}", "username or password cannot be empty...".bright_red());
         return Ok(None);
     }
+
+    //spinner&progrrss-bar
+    let spinner = ProgressBar::new_spinner();
+    spinner.set_message("checking credentials...");
+    spinner.enable_steady_tick(Duration::from_millis(100));
+    spinner.set_style(
+        ProgressStyle::default_spinner()
+            .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
+            .template("{spinner:.green} {msg}")
+            .unwrap(),
+    );
 
     let query = format!("select * from user where username = {:?}", username);
     let mut response = db.query(query).await?;
     let users: Vec<User> = response.take(0)?;
+    spinner.finish_and_clear();
 
     //check if user exists
     if users.is_empty() {
@@ -152,15 +196,27 @@ pub async fn login_flow(db: &Surreal<Client>) -> Result<Option<User>> {
 
     let user = &users[0];
 
+    //verify pass spinner
+    let verify_spinner = ProgressBar::new_spinner();
+    verify_spinner.set_message("verifying password...");
+    verify_spinner.enable_steady_tick(Duration::from_millis(100));
+    verify_spinner.set_style(
+        ProgressStyle::default_spinner()
+            .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
+            .template("{spinner:.cyan} {msg}")
+            .unwrap(),
+    );
+
     //parsing and hasing users creds
     let parsed_hash = PasswordHash::new(&user.password)?;
-    if Argon2::default()
+    let valid = Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
-        .is_ok()
-    {
+        .is_ok();
+    verify_spinner.finish_and_clear();
+    if valid {
         println!(
             "{}",
-            format!("login successful..! welcome, {}!", user.username).green()
+            format!("login successful! welcome, {}.", user.username).green()
         );
         Ok(Some(user.clone()))
     } else {
