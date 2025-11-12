@@ -82,7 +82,7 @@ pub async fn list_entries(db: &Surreal<Client>, user: &User) -> Result<()> {
     let entries: Vec<JournalEntry> = resp.take(0)?;
 
     if entries.is_empty() {
-        println!("{}", "no entires found for {user.username}".red());
+        println!("{}", format!("no entires found for {}", user.username).red());
     } else {
         println!("your journal entires: ");
         for (i, entry) in entries.iter().enumerate() {
