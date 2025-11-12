@@ -2,6 +2,7 @@ mod auth;
 mod db;
 mod models;
 mod common;
+//small fix
 
 use db::connect;
 use common::utils::main_menu;
