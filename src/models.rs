@@ -15,6 +15,10 @@ pub struct JournalEntry {
     pub user: String,
     pub title: String,
     pub content: String,
+    //
+    pub tags: Vec<String>, 
+    pub created_at: String, 
+    pub updated_at: String, 
 }
 
 // #[derive(Debug, Serialize, Deserialize, Clone)]

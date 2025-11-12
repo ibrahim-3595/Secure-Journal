@@ -1,9 +1,11 @@
+use crate::models::{JournalEntry, User};
 use anyhow::Result;
 use colored::*;
 use dialoguer::Input;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
-use crate::models::{JournalEntry, User};
+
+use chrono::Utc;
 
 pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
     let title = Input::<String>::new()
@@ -14,6 +16,17 @@ pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
         .with_prompt("content")
         .interact()
         .unwrap();
+    let tags_input = Input::<String>::new()
+        .with_prompt("tags (comma seperated)")
+        .allow_empty(true)
+        .interact()
+        .unwrap();
+    let now = Utc::now().to_rfc3339();
+    let tags: Vec<String> = tags_input
+        .split(',')
+        .map(|t| t.trim().to_string())
+        .filter(|t| !t.is_empty())
+        .collect();
 
     let _: Option<JournalEntry> = db
         .create("entry")
@@ -22,6 +35,9 @@ pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
             user: user.username.clone(),
             title,
             content,
+            tags,
+            created_at: now.clone(),
+            updated_at: now,
         })
         .await?;
     println!("{}", "journal entry has been saved..".green());
@@ -82,14 +98,27 @@ pub async fn list_entries(db: &Surreal<Client>, user: &User) -> Result<()> {
     let entries: Vec<JournalEntry> = resp.take(0)?;
 
     if entries.is_empty() {
-        println!("{}", format!("no entires found for {}", user.username).red());
+        println!(
+            "{}",
+            format!("no entires found for {}", user.username).red()
+        );
     } else {
         println!("your journal entires: ");
         for (i, entry) in entries.iter().enumerate() {
-            println!("{}. {} - {}", i + 1, entry.title, entry.content);
+            println!(
+                "\n{}. {} - {}\n   created at: {}\n    tags: {}\n",
+                i + 1,
+                entry.title,
+                entry.content,
+                entry.created_at, 
+                if entry.tags.is_empty() {
+                    "(none)".to_string()
+                } else {
+                    entry.tags.join(", ")
+                }
+            );
         }
     }
 
     Ok(())
 }
-
