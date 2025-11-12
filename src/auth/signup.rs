@@ -11,7 +11,7 @@ use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
 use crate::auth::validate::validate_creds;
-use crate::models::User;
+use crate::models::models::User;
 
 pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     //create new user

@@ -10,7 +10,7 @@ use crate::auth::signup::signup_flow;
 use crate::auth::delete::delete_user;
 use crate::auth::entries::{delete_entry, list_entries, list_users, new_entry, update_entry};
 
-use crate::models::User;
+use crate::models::models::User;
 
 pub async fn main_menu(db: &Surreal<Client>) {
     let mut curr_usr: Option<User> = None;
@@ -62,7 +62,6 @@ pub async fn main_menu(db: &Surreal<Client>) {
                     Ok(())
                 }
             }
-            //
             5 => {
                 if let Some(user) = &curr_usr {
                     update_entry(&db, user).await
@@ -71,7 +70,6 @@ pub async fn main_menu(db: &Surreal<Client>) {
                     Ok(())
                 }
             }
-            //
             6 => {
                 if let Some(user) = &curr_usr {
                     delete_entry(&db, user).await

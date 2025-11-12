@@ -8,7 +8,8 @@ use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
-use crate::models::User;
+use crate::models::models::User;
+
 
 pub async fn login_flow(db: &Surreal<Client>) -> Result<Option<User>> {
     //logins the user

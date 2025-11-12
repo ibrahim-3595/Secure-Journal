@@ -4,7 +4,7 @@ use dialoguer::Confirm;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
-use crate::models::User;
+use crate::models::models::User;
 
 pub async fn delete_user(db: &Surreal<Client>, user: &User) -> Result<()> {
     let confirm = Confirm::new()

@@ -1,4 +1,4 @@
-use crate::models::{JournalEntry, User};
+use crate::models::models::{JournalEntry, User};
 use anyhow::{Ok, Result};
 use colored::*;
 use dialoguer::Input;
