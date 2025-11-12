@@ -29,7 +29,7 @@ pub async fn login_flow(db: &Surreal<Client>) -> Result<Option<User>> {
     //spinner&progrrss-bar
     let spinner = ProgressBar::new_spinner();
     spinner.set_message("checking credentials...");
-    spinner.enable_steady_tick(Duration::from_millis(100));
+    spinner.enable_steady_tick(Duration::from_millis(300));
     spinner.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
@@ -53,7 +53,7 @@ pub async fn login_flow(db: &Surreal<Client>) -> Result<Option<User>> {
     //verify pass spinner
     let verify_spinner = ProgressBar::new_spinner();
     verify_spinner.set_message("verifying password...");
-    verify_spinner.enable_steady_tick(Duration::from_millis(100));
+    verify_spinner.enable_steady_tick(Duration::from_millis(200));
     verify_spinner.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")

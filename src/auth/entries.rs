@@ -39,7 +39,7 @@ pub async fn delete_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
         return Ok(());
     }
 
-    println!("your journal entries..");
+    println!("your journal entries: ");
     for (i, entry) in entries.iter().enumerate() {
         println!("{}. {} - {}", i + 1, entry.title, entry.content);
     }
@@ -68,7 +68,7 @@ pub async fn delete_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
 pub async fn list_users(db: &Surreal<Client>) -> Result<()> {
     let mut response = db.query("select * from user").await?;
     let users: Vec<User> = response.take(0)?;
-    println!("{}", "registered user..".bright_green());
+    println!("{}", "registered users: ".bright_green());
     for usr in users {
         println!("- {:?}", usr.username);
     }

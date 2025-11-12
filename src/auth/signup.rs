@@ -61,7 +61,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     }
 
     //hashing progress..
-    let bar = ProgressBar::new(300);
+    let bar = ProgressBar::new(100);
     bar.set_style(
         ProgressStyle::with_template(
             "{spinner:.blue} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}% - {msg}",
@@ -72,7 +72,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     bar.set_message("hasing password securely..");
     for i in 0..100 {
         bar.set_position(i);
-        std::thread::sleep(Duration::from_millis(10));
+        std::thread::sleep(Duration::from_millis(60));
     }
 
     //hashing..
