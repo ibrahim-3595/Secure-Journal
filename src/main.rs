@@ -13,9 +13,10 @@ use crate::common::utils;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Welcome to Secure Journal App ;)");
 
-    let db = connect().await?;
-    utils::main_menu(&db).await;
+    let db = connect().await.expect("Failed to connect to database");
 
+    utils::main_menu(&db).await;
+    
     Ok(())
 }
 
