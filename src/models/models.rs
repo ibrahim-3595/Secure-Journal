@@ -10,7 +10,7 @@ pub struct User {
     pub id: Option<surrealdb::RecordId>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct JournalEntry {
     pub id: Option<surrealdb::RecordId>,
     pub user: String,

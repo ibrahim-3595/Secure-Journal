@@ -6,13 +6,14 @@ use surrealdb::engine::remote::ws::Client;
 
 use std::result::Result::Ok;
 
-use crate::auth::entries::list_entries;
 use crate::auth::delete::delete_user;
+use crate::auth::entries::get_entries_for_user;
+use crate::auth::entries::list_entries;
 use crate::auth::entries::{delete_entry, list_users, new_entry, update_entry};
 use crate::auth::login::login_flow;
 use crate::auth::signup::signup_flow;
-use crate::auth::entries::get_entries_for_user;
 use crate::helpers::export::export_to_md;
+use crate::helpers::import::import_md;
 use crate::models::models::User;
 
 pub async fn main_menu(db: &Surreal<Client>) {
@@ -28,9 +29,10 @@ pub async fn main_menu(db: &Surreal<Client>) {
             "Update my journal entries", //6
             "Delete a journal entry",    //7
             "Delete my account",         //8
-            "Export journal",            //9update
-            "Logout",                    //10
-            "Exit",                      //11
+            "Export journal",            //9
+            "Import journal",            //10
+            "Logout",                    //11
+            "Exit",                      //_
         ];
         let selection = Select::new()
             .with_prompt("what would you like to do..?")
@@ -91,9 +93,8 @@ pub async fn main_menu(db: &Surreal<Client>) {
                 }
                 Ok(())
             }
-            //
             8 => {
-                if let Some(user) = &curr_usr {            
+                if let Some(user) = &curr_usr {
                     let entries_res = get_entries_for_user(&db, user).await;
                     if let Ok(entries) = entries_res {
                         let file_name = format!(
@@ -101,28 +102,48 @@ pub async fn main_menu(db: &Surreal<Client>) {
                             user.username,
                             chrono::Local::now().format("%Y-%m-%d_%H-%M")
                         );
-            
+
                         if let Err(e) = export_to_md(&entries, &file_name) {
                             eprintln!("{}", format!("Export failed: {:?}", e).bright_red());
                         } else {
                             println!("{}", format!("Exported to {}", file_name).green());
                         }
                     } else {
-                        eprintln!("{}", format!("Failed to fetch entries: {:?}", entries_res.err()).bright_red());
+                        eprintln!(
+                            "{}",
+                            format!("Failed to fetch entries: {:?}", entries_res.err())
+                                .bright_red()
+                        );
                     }
                 } else {
                     println!("{}", "please login first..".red());
                 }
                 Ok(())
             }
-
-            //
             9 => {
+                println!("{}", "Enter path to .md file:".cyan());
+                let mut path = String::new();
+                std::io::stdin().read_line(&mut path);
+                let path = path.trim();
+
+                match import_md(path) {
+                    Ok(entries) => {
+                        for e in entries {
+                            // call your DB insertion here
+                            println!("{}", format!("Imported: {}", e.title).green());
+                        }
+                    }
+                    Err(e) => eprintln!("{}", format!("Import failed: {:?}", e).red()),
+                }
+
+                Ok(())
+            }
+            10 => {
                 curr_usr = None;
                 println!("{}", "logged out..!".bright_yellow());
                 Ok(())
             }
-            10 => {
+            11 => {
                 println!("{}", "goodbye..!".cyan());
                 return;
             }
