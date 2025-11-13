@@ -41,7 +41,7 @@ pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
         })
         .await?;
     
-    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     println!("{}", "journal entry has been saved..".green());
 
     Ok(())
@@ -53,13 +53,13 @@ pub async fn delete_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
     let entries: Vec<JournalEntry> = resp.take(0)?;
 
     if entries.is_empty() {
-        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
         println!("{}", "no entries to delete..".red());
         return Ok(());
     }
 
     println!("your journal entries: ");
-    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     for (i, entry) in entries.iter().enumerate() {
         println!("{}. {} - {}", i + 1, entry.title, entry.content);
     }
@@ -89,7 +89,7 @@ pub async fn delete_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
 pub async fn list_users(db: &Surreal<Client>) -> Result<()> {
     let mut response = db.query("select * from user").await?;
     let users: Vec<User> = response.take(0)?;
-    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     println!("{}", "registered users: ".bright_green());
     for usr in users {
         println!("- {:?}", usr.username);
@@ -184,4 +184,12 @@ pub async fn update_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
     println!("{}", "entry updated successfully..".bright_green());
 
     Ok(())
+}
+
+//
+pub async fn get_entries_for_user(db: &Surreal<Client>, user: &User) -> Result<Vec<JournalEntry>> {
+    let sql = format!("SELECT * FROM journal_entries WHERE user = '{}';", user.username);
+    let mut response = db.query(sql).await?;
+    let entries: Vec<JournalEntry> = response.take(0)?;
+    Ok(entries)
 }

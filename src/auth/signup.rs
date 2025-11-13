@@ -31,7 +31,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     //spinners&progress-bars
     let spinner = ProgressBar::new_spinner();
     spinner.set_message("checking if username is available..");
-    spinner.enable_steady_tick(Duration::from_millis(120));
+    spinner.enable_steady_tick(Duration::from_millis(50));
     spinner.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
@@ -72,7 +72,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     bar.set_message("hasing password securely..");
     for i in 0..100 {
         bar.set_position(i);
-        std::thread::sleep(Duration::from_millis(60));
+        std::thread::sleep(Duration::from_millis(30));
     }
 
     //hashing..
@@ -87,7 +87,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
     //insert..
     let spinner = ProgressBar::new_spinner();
     spinner.set_message("created your acc..");
-    spinner.enable_steady_tick(Duration::from_millis(200));
+    spinner.enable_steady_tick(Duration::from_millis(100));
     spinner.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
