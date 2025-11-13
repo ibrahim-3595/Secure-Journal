@@ -46,6 +46,6 @@ pub fn export_to_md(entries: &[JournalEntry], file_path: &str) -> anyhow::Result
     }
 
     bar.finish_with_message("Export complete!");
-    println!("{}", "✅ Journal exported successfully!".green());
+    println!("{}", "Journal exported successfully..!".green());
     Ok(())
 }

@@ -104,14 +104,14 @@ pub async fn main_menu(db: &Surreal<Client>) {
                         );
 
                         if let Err(e) = export_to_md(&entries, &file_name) {
-                            eprintln!("{}", format!("Export failed: {:?}", e).bright_red());
+                            eprintln!("{}", format!("export failed: {:?}", e).bright_red());
                         } else {
-                            println!("{}", format!("Exported to {}", file_name).green());
+                            println!("{}", format!("exported to {}", file_name).green());
                         }
                     } else {
                         eprintln!(
                             "{}",
-                            format!("Failed to fetch entries: {:?}", entries_res.err())
+                            format!("failed to fetch entries: {:?}", entries_res.err())
                                 .bright_red()
                         );
                     }
@@ -121,7 +121,7 @@ pub async fn main_menu(db: &Surreal<Client>) {
                 Ok(())
             }
             9 => {
-                println!("{}", "Enter path to .md file:".cyan());
+                println!("{}", "enter path to .md file:".cyan());
                 let mut path = String::new();
                 std::io::stdin().read_line(&mut path);
                 let path = path.trim();
@@ -130,10 +130,10 @@ pub async fn main_menu(db: &Surreal<Client>) {
                     Ok(entries) => {
                         for e in entries {
                             // call your DB insertion here
-                            println!("{}", format!("Imported: {}", e.title).green());
+                            println!("{}", format!("imported: {}", e.title).green());
                         }
                     }
-                    Err(e) => eprintln!("{}", format!("Import failed: {:?}", e).red()),
+                    Err(e) => eprintln!("{}", format!("import failed: {:?}", e).red()),
                 }
 
                 Ok(())

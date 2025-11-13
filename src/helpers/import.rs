@@ -24,7 +24,6 @@ pub fn import_md(file_path: &str) -> Result<Vec<JournalEntry>> {
     //integrity check
     let argon2 = Argon2::default();
     let fake_salt = SaltString::generate(&mut rand::rngs::OsRng);
-    // just to prove this file can be hashed (not real security yet)
     let _ = argon2.hash_password(file_path.as_bytes(), &fake_salt)?;
 
     //parse
@@ -40,7 +39,7 @@ pub fn import_md(file_path: &str) -> Result<Vec<JournalEntry>> {
         } else if line.starts_with("_created:") {
             current.created_at = line.trim_start_matches("_created:").trim().to_string();
         } else if line == "---" {
-            // end of entry
+            // eoe
         } else {
             current.content.push_str(line);
             current.content.push('\n');
@@ -51,7 +50,7 @@ pub fn import_md(file_path: &str) -> Result<Vec<JournalEntry>> {
     }
 
     bar.finish_with_message(
-        format!("Imported {} entries!", entries.len())
+        format!("Imported {} entries..!", entries.len())
             .green()
             .to_string(),
     );
