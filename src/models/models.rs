@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use surrealdb::opt::RecordId;
 use surrealdb::Surreal;
 use surrealdb::engine::remote::ws::Client;
 
@@ -7,16 +8,15 @@ use surrealdb::engine::remote::ws::Client;
 pub struct User {
     pub username: String,
     pub password: String,
-    pub id: Option<surrealdb::RecordId>,
+    pub id: Option<RecordId>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct JournalEntry {
-    pub id: Option<surrealdb::RecordId>,
+    pub id: Option<RecordId>,
     pub user: String,
     pub title: String,
     pub content: String,
-    //
     pub tags: Vec<String>, 
     pub created_at: String, 
     pub updated_at: String, 

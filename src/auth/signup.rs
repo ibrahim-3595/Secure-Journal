@@ -97,7 +97,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
             .template("{spinner:.green} {msg}")
             .unwrap(),
     );
-    let _: Option<User> = db
+    let _ = db
         .create("user")
         .content(User {
             username,
@@ -106,6 +106,7 @@ pub async fn signup_flow(db: &Surreal<Client>) -> Result<()> {
         })
         .await
         .map_err(|e| anyhow::anyhow!("databse error: {e}"))?;
+    
     spinner.finish_and_clear();
     println!("{}", "account created successfully..".green());
 

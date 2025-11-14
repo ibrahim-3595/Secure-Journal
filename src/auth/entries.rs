@@ -28,7 +28,7 @@ pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
         .filter(|t| !t.is_empty())
         .collect();
 
-    let _: Option<JournalEntry> = db
+    let _ = db
         .create("entry")
         .content(JournalEntry {
             id: None,
@@ -40,6 +40,7 @@ pub async fn new_entry(db: &Surreal<Client>, user: &User) -> Result<()> {
             updated_at: now,
         })
         .await?;
+    // let _entry = created.into_iter().next().expect("Failed to create entry");
     
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     println!("{}", "journal entry has been saved..".green());

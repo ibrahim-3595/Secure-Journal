@@ -1,15 +1,12 @@
 use surrealdb::Surreal;
-use surrealdb::engine::local::{Db, File};
+use surrealdb::engine::local::{Mem, Db};
 use anyhow::Result;
 
 pub async fn connect() -> Result<Surreal<Db>> {
-    let db = Surreal::new::<File>("secure_journal.db").await?;
-    println!("Connected to local SurrealDB file database..");
+    let db = Surreal::new::<Mem>(()).await?;
+    println!("Connected to in-memory SurrealDB (Mem engine).");
     Ok(db)
 }
-
-
-
 
 
 
@@ -27,7 +24,7 @@ pub async fn connect() -> Result<Surreal<Db>> {
 //     //     })
 //     //     .await;
 //     // db.use_ns("journal").use_db("database").await.unwrap();
-    
+
 //     Ok(db)
 // }
-// 
+//
