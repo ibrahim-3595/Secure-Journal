@@ -97,7 +97,7 @@ pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
             .template("{spinner:.green} {msg}")
             .unwrap(),
     );
-    let _: Vec<JournalEntry> = db
+    let _: Vec<User> = db
         .create("user")
         .content(User {
             username,
