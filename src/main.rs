@@ -22,5 +22,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
 //tomorrow's tasks: 
+// integrate cloud and mem to enable user to save their entry once there exit the env
 // integrate axum which integrates with surrealdb
 // add a UI framework like dioxus/yew 
