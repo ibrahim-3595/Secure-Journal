@@ -10,7 +10,7 @@ use surrealdb::engine::local::Db;
 
 use crate::models::models::User;
 
-pub async fn login_flow(db: &Surreal<Db>) -> Result<Option<User>> {
+pub async fn login_flow(db: &Surreal<Db>, username: &str, password: &str) -> Result<Option<User>> {
     //logins the user
     let username = Input::<String>::new()
         .with_prompt("username")
@@ -75,6 +75,37 @@ pub async fn login_flow(db: &Surreal<Db>) -> Result<Option<User>> {
         Ok(Some(user.clone()))
     } else {
         println!("{}", "incorrect password..".red());
+        Ok(None)
+    }
+}
+
+/// NEW API VERSION (no CLI)
+pub async fn login_api(
+    db: &Surreal<Db>,
+    username: &str,
+    password: &str,
+) -> Result<Option<User>> {
+
+    // Query DB for user
+    let query = format!("select * from user where username = {:?}", username);
+    let mut response = db.query(query).await?;
+    let users: Vec<User> = response.take(0)?;
+
+    if users.is_empty() {
+        return Ok(None);
+    }
+
+    let user = &users[0];
+
+    // Verify password
+    let parsed_hash = PasswordHash::new(&user.password)?;
+    let valid = Argon2::default()
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .is_ok();
+
+    if valid {
+        Ok(Some(user.clone()))
+    } else {
         Ok(None)
     }
 }

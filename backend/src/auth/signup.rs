@@ -16,7 +16,7 @@ use std::time::Duration;
 use crate::auth::validate::validate_creds;
 use crate::models::models::User;
 
-pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
+pub async fn signup_flow(db: &Surreal<Db>, username: &str, password: &str) -> Result<()> {
     //create new user
     let username = Input::<String>::new()
         .with_prompt("choose a username")
