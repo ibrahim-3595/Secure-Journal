@@ -75,35 +75,48 @@ Your password is hashed with **Argon2**, and entries are encrypted using **rpass
 
 ```
 secure-journal/
-│
-├── src/
+│->backend/
+  |--Cargo.toml 
+  ├── src/
     ├── main.rs
     ├── db.rs
-    │--auth
+    │--auth/
     |    |--delete.rs
     |    |--entires.rs
     |    |--login.rs
     |    |--mod.rs
     |    |--signup.rs
     |    |--validate.rs
-    |--common
+    |--common/
     |   |--error.rs 
     |   |--mod.rs
     |   |--utils.rs
     |
-    |--helpers
+    |--helpers/
     |   |--export.rs
     |   |--import.rs
     |   |--mod.rs
     |
-    |--models
+    |--models/
     |   |--mod.rs
     |   |--models.rs
     |
    /
   /
  /
-| 
+│-->frontend
+  |--Cargo.toml 
+  |--Dioxus.toml 
+  |--tailwind.css
+  |--assets/
+    |--main.css 
+    |--tailwind.css 
+  |--src/
+    |--main.rs
+    /
+  /
+/
+|
 ├── Cargo.toml
 └── README.md
 ```

@@ -20,18 +20,18 @@ pub async fn main_menu(db: &Surreal<Db>) {
 
     loop {
         let options = vec![
-            "Login",                     //1
-            "Create account",            //2
-            "List Users",                //3x
-            "Write a new journal entry", //4
-            "View my journal entries",   //5
-            "Update my journal entries", //6
-            "Delete a journal entry",    //7
-            "Delete my account",         //8
-            "Export journal",            //9
-            "Import journal",            //10
-            "Logout",                    //11
-            "Exit",                      //_
+            "Login",                     //0
+            "Create account",            //1
+            "List Users",                //2
+            "Write a new journal entry", //3
+            "View my journal entries",   //4
+            "Update my journal entries", //5
+            "Delete a journal entry",    //6
+            "Delete my account",         //7
+            "Export journal",            //8
+            "Import journal",            //9
+            "Logout",                    //10
+            "Exit",                      //11
         ];
         let selection = Select::new()
             .with_prompt("what would you like to do..?")
@@ -39,17 +39,27 @@ pub async fn main_menu(db: &Surreal<Db>) {
             .default(0)
             .interact()
             .unwrap();
+        
         let result = match selection {
-            0 => match login_flow(&db).await {
-                Ok(Some(user)) => {
-                    println!("{}", format!("logged in as {}", user.username).green());
-                    curr_usr = Some(user);
-                    Ok(())
+            0 => {
+                // Login flow - no arguments needed, it handles input internally
+                match login_flow(db).await {
+                    Ok(Some(user)) => {
+                        curr_usr = Some(user.clone());
+                        println!("Logged in as {}", user.username);
+                        Ok(())
+                    }
+                    Ok(None) => {
+                        println!("Login failed");
+                        Ok(())
+                    }
+                    Err(e) => Err(e),
                 }
-                Ok(None) => Ok(()),
-                Err(e) => Err(e),
-            },
-            1 => signup_flow(&db).await,
+            }
+            1 => {
+                // Signup flow - no arguments needed
+                signup_flow(db).await
+            }
             2 => list_users(&db).await,
             3 => {
                 if let Some(user) = &curr_usr {
@@ -148,6 +158,7 @@ pub async fn main_menu(db: &Surreal<Db>) {
             }
             _ => Ok(()),
         };
+        
         if let Err(e) = result {
             eprintln!("{}", format!("error: {:?}", e).bright_red());
         }

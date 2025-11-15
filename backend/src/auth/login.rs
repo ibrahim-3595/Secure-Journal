@@ -10,7 +10,7 @@ use surrealdb::engine::local::Db;
 
 use crate::models::models::User;
 
-pub async fn login_flow(db: &Surreal<Db>, username: &str, password: &str) -> Result<Option<User>> {
+pub async fn login_flow(db: &Surreal<Db>) -> Result<Option<User>> {
     //logins the user
     let username = Input::<String>::new()
         .with_prompt("username")
@@ -79,9 +79,9 @@ pub async fn login_flow(db: &Surreal<Db>, username: &str, password: &str) -> Res
     }
 }
 
-/// NEW API VERSION (no CLI)
+/// API VERSION - Changed from Client to Db
 pub async fn login_api(
-    db: &Surreal<Db>,
+    db: &Surreal<Db>,  // Changed from Client to Db
     username: &str,
     password: &str,
 ) -> Result<Option<User>> {

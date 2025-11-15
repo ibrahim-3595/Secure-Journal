@@ -16,7 +16,7 @@ use std::time::Duration;
 use crate::auth::validate::validate_creds;
 use crate::models::models::User;
 
-pub async fn signup_flow(db: &Surreal<Db>, username: &str, password: &str) -> Result<()> {
+pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
     //create new user
     let username = Input::<String>::new()
         .with_prompt("choose a username")
@@ -109,6 +109,48 @@ pub async fn signup_flow(db: &Surreal<Db>, username: &str, password: &str) -> Re
     
     spinner.finish_and_clear();
     println!("{}", "account created successfully..".green());
+
+    Ok(())
+}
+
+/// API VERSION - Changed from Client to Db
+pub async fn signup_api(
+    db: &Surreal<Db>,  // Changed from Client to Db
+    username: &str,
+    password: &str,
+) -> Result<()> {
+
+    // Validate creds using your existing validation
+    if let Err(e) = crate::auth::validate::validate_creds(username, password) {
+        return Err(anyhow::anyhow!(e));
+    }
+
+    // Check if user exists
+    let check_query = format!("select * from user where username = {:?}", username);
+    let mut check = db.query(check_query).await?;
+    let existing: Vec<User> = check.take(0)?;
+
+    if !existing.is_empty() {
+        return Err(anyhow::anyhow!("Username already exists"));
+    }
+
+    // Hash password
+    let mut rng = OsRng;
+    let salt = SaltString::generate(&mut rng);
+
+    let hashed = Argon2::default()
+        .hash_password(password.as_bytes(), &salt)?
+        .to_string();
+
+    // Insert new user
+    let _: Vec<User> = db
+        .create("user")
+        .content(User {
+            username: username.to_string(),
+            password: hashed,
+            id: None,
+        })
+        .await?;
 
     Ok(())
 }

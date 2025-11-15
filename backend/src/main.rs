@@ -9,18 +9,32 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 
-use crate::auth::login::login_flow;
-use crate::auth::signup::signup_flow;
+use crate::auth::login::login_api;
+use crate::auth::signup::signup_api;
+use crate::common::utils::main_menu;
 use crate::db::connect;
+use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 
 #[derive(Clone)]
 struct AppState {
-    db: surrealdb::Surreal<surrealdb::engine::remote::ws::Client>,
+    db: Surreal<Db>,  // Changed from Client to Db
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let db = connect().await?;
+    
+    // Check if we want to run CLI or API server
+    let args: Vec<String> = std::env::args().collect();
+    
+    if args.len() > 1 && args[1] == "cli" {
+        // Run CLI mode
+        main_menu(&db).await;
+        return Ok(());
+    }
+    
+    // Otherwise run API server
     let state = Arc::new(AppState { db });
 
     let app = Router::new()
@@ -29,10 +43,10 @@ async fn main() -> anyhow::Result<()> {
         .layer(CorsLayer::permissive())
         .with_state(state);
 
-    println!("Server running http://127.0.0.1:3001");
-    axum::Server::bind(&"127.0.0.1:3001".parse()?)
-        .serve(app.into_make_service())
-        .await?;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3001").await?;
+    println!("Server running on http://127.0.0.1:3001");
+    
+    axum::serve(listener, app).await?;
 
     Ok(())
 }
@@ -53,7 +67,7 @@ async fn api_login(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<AuthRequest>,
 ) -> Json<AuthResponse> {
-    match login_flow(&state.db, &payload.username, &payload.password).await {
+    match login_api(&state.db, &payload.username, &payload.password).await {
         Ok(Some(user)) => Json(AuthResponse {
             ok: true,
             message: format!("Logged in as {}", user.username),
@@ -73,7 +87,7 @@ async fn api_signup(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<AuthRequest>,
 ) -> Json<AuthResponse> {
-    match signup_flow(&state.db, &payload.username, &payload.password).await {
+    match signup_api(&state.db, &payload.username, &payload.password).await {
         Ok(()) => Json(AuthResponse {
             ok: true,
             message: "Signup successful".into(),
