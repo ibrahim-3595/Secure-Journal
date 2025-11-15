@@ -31,10 +31,10 @@ pub async fn main_menu(db: &Surreal<Db>) {
             "Export journal",            //8
             "Import journal",            //9
             "Logout",                    //10
-            "Exit",                      //11
+            "Exit",                      //_
         ];
         let selection = Select::new()
-            .with_prompt("what would you like to do..?")
+            .with_prompt("What would you like to do?")
             .items(&options)
             .default(0)
             .interact()
@@ -42,7 +42,6 @@ pub async fn main_menu(db: &Surreal<Db>) {
         
         let result = match selection {
             0 => {
-                // Login flow - no arguments needed, it handles input internally
                 match login_flow(db).await {
                     Ok(Some(user)) => {
                         curr_usr = Some(user.clone());
@@ -57,7 +56,6 @@ pub async fn main_menu(db: &Surreal<Db>) {
                 }
             }
             1 => {
-                // Signup flow - no arguments needed
                 signup_flow(db).await
             }
             2 => list_users(&db).await,
@@ -65,7 +63,7 @@ pub async fn main_menu(db: &Surreal<Db>) {
                 if let Some(user) = &curr_usr {
                     new_entry(&db, user).await
                 } else {
-                    println!("{}", "please login first..".red());
+                    println!("{}", "Please login first".red());
                     Ok(())
                 }
             }
@@ -73,7 +71,7 @@ pub async fn main_menu(db: &Surreal<Db>) {
                 if let Some(user) = &curr_usr {
                     list_entries(&db, user).await
                 } else {
-                    println!("{}", "please login first..".red());
+                    println!("{}", "Please login first".red());
                     Ok(())
                 }
             }
@@ -81,7 +79,7 @@ pub async fn main_menu(db: &Surreal<Db>) {
                 if let Some(user) = &curr_usr {
                     update_entry(&db, user).await
                 } else {
-                    println!("{}", "no entry to update..".red());
+                    println!("{}", "No entry to update".red());
                     Ok(())
                 }
             }
@@ -89,7 +87,7 @@ pub async fn main_menu(db: &Surreal<Db>) {
                 if let Some(user) = &curr_usr {
                     delete_entry(&db, user).await
                 } else {
-                    println!("{}", "please login first..".red());
+                    println!("{}", "Please login first".red());
                     Ok(())
                 }
             }
@@ -98,7 +96,7 @@ pub async fn main_menu(db: &Surreal<Db>) {
                     let _ = delete_user(&db, user).await;
                     curr_usr = None;
                 } else {
-                    println!("{}", "please login first..".red());
+                    println!("{}", "Please login first".red());
                 }
                 Ok(())
             }
@@ -113,24 +111,24 @@ pub async fn main_menu(db: &Surreal<Db>) {
                         );
 
                         if let Err(e) = export_to_md(&entries, &file_name) {
-                            eprintln!("{}", format!("export failed: {:?}", e).bright_red());
+                            eprintln!("{}", format!("Export failed: {:?}", e).bright_red());
                         } else {
-                            println!("{}", format!("exported to {}", file_name).green());
+                            println!("{}", format!("Exported to {}", file_name).green());
                         }
                     } else {
                         eprintln!(
                             "{}",
-                            format!("failed to fetch entries: {:?}", entries_res.err())
+                            format!("Failed to fetch entries: {:?}", entries_res.err())
                                 .bright_red()
                         );
                     }
                 } else {
-                    println!("{}", "please login first..".red());
+                    println!("{}", "Please login first".red());
                 }
                 Ok(())
             }
             9 => {
-                println!("{}", "enter path to .md file:".cyan());
+                println!("{}", "Enter path to .md file:".cyan());
                 let mut path = String::new();
                 let _ = std::io::stdin().read_line(&mut path);
                 let path = path.trim();
@@ -138,22 +136,21 @@ pub async fn main_menu(db: &Surreal<Db>) {
                 match import_md(path) {
                     Ok(entries) => {
                         for e in entries {
-                            // call your DB insertion here
-                            println!("{}", format!("imported: {}", e.title).green());
+                            println!("{}", format!("Imported: {}", e.title).green());
                         }
                     }
-                    Err(e) => eprintln!("{}", format!("import failed: {:?}", e).red()),
+                    Err(e) => eprintln!("{}", format!("Import failed: {:?}", e).red()),
                 }
 
                 Ok(())
             }
             10 => {
                 curr_usr = None;
-                println!("{}", "logged out..!".bright_yellow());
+                println!("{}", "Logged Out!!".bright_yellow());
                 Ok(())
             }
             11 => {
-                println!("{}", "goodbye..!".cyan());
+                println!("{}", "Good-Bye..! ;)".cyan());
                 return;
             }
             _ => Ok(()),

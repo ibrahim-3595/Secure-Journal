@@ -4,6 +4,8 @@ mod models;
 mod pages;
 mod state;
 
+use crate::Code::Home;
+
 use dioxus::prelude::*;
 use state::AppState;
 

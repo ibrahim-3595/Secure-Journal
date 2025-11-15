@@ -19,10 +19,10 @@ use crate::models::models::User;
 pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
     //create new user
     let username = Input::<String>::new()
-        .with_prompt("choose a username")
+        .with_prompt("Choose a Username")
         .interact()
-        .map_err(|e| anyhow::anyhow!("input error: {e}"))?;
-    println!("choose a password");
+        .map_err(|e| anyhow::anyhow!("Input error: {e}"))?;
+    println!("Choose a Password");
     let password = read_password().unwrap();
 
     //val_creds
@@ -33,7 +33,7 @@ pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
 
     //spinners&progress-bars
     let spinner = ProgressBar::new_spinner();
-    spinner.set_message("checking if username is available..");
+    spinner.set_message("Checking if username is available..");
     spinner.enable_steady_tick(Duration::from_millis(50));
     spinner.set_style(
         ProgressStyle::default_spinner()
@@ -50,16 +50,16 @@ pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
     if !existing.is_empty() {
         println!(
             "{}",
-            "username already exists..please choose another one!!".bright_red()
+            "Username already exists. Please choose another one!!".bright_red()
         );
         return Ok(());
     }
 
     //confirm pass
-    println!("confirm password..");
+    println!("Confirm password");
     let confirm_pass = read_password().unwrap();
     if confirm_pass != password {
-        println!("{}", "passwords do not match..".bright_red());
+        println!("{}", "Passwords do not match :(".bright_red());
         return Ok(());
     }
 
@@ -72,7 +72,7 @@ pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
         .unwrap()
         .progress_chars("=>-"),
     );
-    bar.set_message("hasing password securely..");
+    bar.set_message("Hashing Password Securely..");
     for i in 0..100 {
         bar.set_position(i);
         std::thread::sleep(Duration::from_millis(30));
@@ -85,11 +85,11 @@ pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
         .hash_password(password.as_bytes(), &salt)
         .unwrap()
         .to_string();
-    bar.finish_with_message("password hashed successfully..");
+    bar.finish_with_message("Password Hashed Successfully..");
 
     //insert..
     let spinner = ProgressBar::new_spinner();
-    spinner.set_message("created your acc..");
+    spinner.set_message("Created your Account :)");
     spinner.enable_steady_tick(Duration::from_millis(100));
     spinner.set_style(
         ProgressStyle::default_spinner()
@@ -105,27 +105,24 @@ pub async fn signup_flow(db: &Surreal<Db>) -> Result<()> {
             id: None,
         })
         .await
-        .map_err(|e| anyhow::anyhow!("databse error: {e}"))?;
+        .map_err(|e| anyhow::anyhow!("database error: {e}"))?;
     
     spinner.finish_and_clear();
-    println!("{}", "account created successfully..".green());
+    println!("{}", "Account created successfully.".green());
 
     Ok(())
 }
 
-/// API VERSION - Changed from Client to Db
 pub async fn signup_api(
-    db: &Surreal<Db>,  // Changed from Client to Db
+    db: &Surreal<Db>,
     username: &str,
     password: &str,
 ) -> Result<()> {
 
-    // Validate creds using your existing validation
     if let Err(e) = crate::auth::validate::validate_creds(username, password) {
         return Err(anyhow::anyhow!(e));
     }
 
-    // Check if user exists
     let check_query = format!("select * from user where username = {:?}", username);
     let mut check = db.query(check_query).await?;
     let existing: Vec<User> = check.take(0)?;
@@ -134,7 +131,6 @@ pub async fn signup_api(
         return Err(anyhow::anyhow!("Username already exists"));
     }
 
-    // Hash password
     let mut rng = OsRng;
     let salt = SaltString::generate(&mut rng);
 
@@ -142,7 +138,6 @@ pub async fn signup_api(
         .hash_password(password.as_bytes(), &salt)?
         .to_string();
 
-    // Insert new user
     let _: Vec<User> = db
         .create("user")
         .content(User {

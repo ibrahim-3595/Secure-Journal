@@ -2,23 +2,23 @@ use anyhow::{Ok, Result};
 use colored::*;
 use dialoguer::Input;
 use surrealdb::Surreal;
-// use surrealdb::engine::remote::ws::Client;
 use chrono::Utc;
 use surrealdb::engine::local::Db;
+// use surrealdb::engine::remote::ws::Client;
 
 use crate::models::models::{JournalEntry, User};
 
 pub async fn new_entry(db: &Surreal<Db>, user: &User) -> Result<()> {
     let title = Input::<String>::new()
-        .with_prompt("title")
+        .with_prompt("Title")
         .interact()
         .unwrap();
     let content = Input::<String>::new()
-        .with_prompt("content")
+        .with_prompt("Content")
         .interact()
         .unwrap();
     let tags_input = Input::<String>::new()
-        .with_prompt("tags (comma seperated)")
+        .with_prompt("Tags (comma seperated)")
         .allow_empty(true)
         .interact()
         .unwrap();
@@ -43,7 +43,7 @@ pub async fn new_entry(db: &Surreal<Db>, user: &User) -> Result<()> {
         .await?;
 
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    println!("{}", "journal entry has been saved..".green());
+    println!("{}", "Journal entry has been saved!".green());
 
     Ok(())
 }
@@ -55,22 +55,22 @@ pub async fn delete_entry(db: &Surreal<Db>, user: &User) -> Result<()> {
 
     if entries.is_empty() {
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        println!("{}", "no entries to delete..".red());
+        println!("{}", "No entries to delete".red());
         return Ok(());
     }
 
-    println!("your journal entries: ");
+    println!("Your journal entries: ");
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     for (i, entry) in entries.iter().enumerate() {
         println!("{}. {} - {}", i + 1, entry.title, entry.content);
     }
 
     let index = Input::<usize>::new()
-        .with_prompt("enter the num of entires to delete..")
+        .with_prompt("Enter the number of entires to delete: ")
         .interact()
         .unwrap();
     if index == 0 || index > entries.len() {
-        println!("{}", "invalid entry number..".red());
+        println!("{}", "Invalid entry number".red());
         return Ok(());
     }
 
@@ -79,9 +79,9 @@ pub async fn delete_entry(db: &Surreal<Db>, user: &User) -> Result<()> {
         let delete_query = format!("delete {}", id);
         db.query(delete_query).await?;
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        println!("{}", "journal entry deleted successfully..".green());
+        println!("{}", "Journal entry deleted successfully!".green());
     } else {
-        println!("{}", "err: entry has no valid ID.".red());
+        println!("{}", "Error: Entry has no valid ID.".red());
     }
 
     Ok(())
@@ -91,7 +91,7 @@ pub async fn list_users(db: &Surreal<Db>) -> Result<()> {
     let mut response = db.query("select * from user").await?;
     let users: Vec<User> = response.take(0)?;
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    println!("{}", "registered users: ".bright_green());
+    println!("{}", "Registered users: ".bright_green());
     for usr in users {
         println!("- {:?}", usr.username);
     }
@@ -107,10 +107,10 @@ pub async fn list_entries(db: &Surreal<Db>, user: &User) -> Result<()> {
     if entries.is_empty() {
         println!(
             "{}",
-            format!("no entires found for {}", user.username).red()
+            format!("No entires found for {}", user.username).red()
         );
     } else {
-        println!("your journal entires: ");
+        println!("Your journal entires: ");
         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
         for (i, entry) in entries.iter().enumerate() {
             println!(

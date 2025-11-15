@@ -18,23 +18,20 @@ use surrealdb::engine::local::Db;
 
 #[derive(Clone)]
 struct AppState {
-    db: Surreal<Db>,  // Changed from Client to Db
+    db: Surreal<Db>,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let db = connect().await?;
     
-    // Check if we want to run CLI or API server
     let args: Vec<String> = std::env::args().collect();
     
     if args.len() > 1 && args[1] == "cli" {
-        // Run CLI mode
         main_menu(&db).await;
         return Ok(());
     }
     
-    // Otherwise run API server
     let state = Arc::new(AppState { db });
 
     let app = Router::new()

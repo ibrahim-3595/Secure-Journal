@@ -9,14 +9,14 @@ use crate::models::models::User;
 pub async fn delete_user(db: &Surreal<Db>, user: &User) -> Result<()> {
     let confirm = Confirm::new()
         .with_prompt(format!(
-            "are you sure you wanna delete '{}' and all their entries..?",
+            "Are you sure you wanna delete '{}' and all their entries?",
             user.username
         ))
         .default(false)
         .interact()
         .unwrap();
     if !confirm {
-        println!("{}", "deletion cancelled..".yellow());
+        println!("{}", "Deletion cancelled..".yellow());
         return Ok(());
     }
 
@@ -30,7 +30,7 @@ pub async fn delete_user(db: &Surreal<Db>, user: &User) -> Result<()> {
 
     println!(
         "{}",
-        "user and all their entries are deleted successfully..".green()
+        "User and all their Entries are deleted successfully!".green()
     );
 
     Ok(())
