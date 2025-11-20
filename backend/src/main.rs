@@ -1,56 +1,42 @@
 mod auth;
-mod common;
 mod db;
 mod helpers;
 mod models;
-//ignore commit
-use axum::{Json, Router, extract::State, routing::post};
+
+use axum::Server;
+use auth::api::{login_api, signup_api};
+use axum::{
+    Router,
+    extract::{Json, State},
+    routing::post,
+};
+use db::DbPool;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 
-use crate::auth::login::login_api;
-use crate::auth::signup::signup_api;
-use crate::common::utils::main_menu;
-use crate::db::{connect, load_users, save_users};
-use crate::models::models::User;
-use surrealdb::Surreal;
-use surrealdb::engine::local::Db;
-
-#[derive(Clone)]
-struct AppState {
-    db: Surreal<Db>,
+pub struct AppState {
+    pub db: DbPool,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let db = connect().await?;
-    
-    let users: Vec<User> = load_users().await?;
+    let db = db::init_db().await?;
 
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() > 1 && args[1] == "cli" {
-        main_menu(&db).await;
-        // Save DB before exiting CLI
-        save_users(&users).await?;
-        return Ok(());
-    }
+    let app_state = Arc::new(AppState { db });
 
-    let state = Arc::new(AppState { db });
-
-    let app = Router::new()
-        .route("/api/login", post(api_login))
+    let _ = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any);
+    let app: Router<_, _> = Router::new()
         .route("/api/signup", post(api_signup))
-        .layer(CorsLayer::permissive())
-        .with_state(state.clone());
+        .route("/api/login", post(api_login))
+        .with_state(app_state);
+        // .layer(cors);
+    let addr = ([0, 0, 0, 0], 3000).into();
+    println!("Server running on http://{}", addr);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3001").await?;
-    println!("Server running on http://127.0.0.1:3001");
-    
-    axum::serve(listener, app).await?;
-    
-    load_users().await?;
-    save_users(&users).await?;
+    Server::bind(&addr).serve(app.into_make_service()).await?;
 
     Ok(())
 }

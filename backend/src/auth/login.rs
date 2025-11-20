@@ -1,108 +1,91 @@
-use anyhow::Result;
+use sqlx::Row;
 use colored::*;
+use anyhow::Result;
 use dialoguer::Input;
-use indicatif::{ProgressBar, ProgressStyle};
-use rpassword::read_password;
+use crate::db::DbPool;
+use serde::Deserialize;
 use std::time::Duration;
-use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use surrealdb::Surreal;
-use surrealdb::engine::local::Db;
-
+use rpassword::read_password;
 use crate::models::models::User;
+use indicatif::{ProgressBar, ProgressStyle};
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 
-pub async fn login_flow(db: &Surreal<Db>) -> Result<Option<User>> {
-    //logins the user
+#[derive(Deserialize)]
+pub struct AuthRequest {
+    pub username: String,
+    pub password: String,
+}
+
+pub async fn login_flow(db: &DbPool) -> Result<Option<User>> {
     let username = Input::<String>::new()
         .with_prompt("Username")
-        .interact()
-        .unwrap();
+        .interact()?;
 
     println!("Password:");
-    let password = read_password().unwrap();
+    let password = read_password()?;
 
-    // val_check
     if username.trim().is_empty() || password.is_empty() {
         println!("{}", "Username or Password cannot be EMPTY".bright_red());
         return Ok(None);
     }
 
-    //spinner&progrrss-bar
+    // Spinner
     let spinner = ProgressBar::new_spinner();
     spinner.set_message("Checking credentials...");
     spinner.enable_steady_tick(Duration::from_millis(100));
     spinner.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
-            .template("{spinner:.green} {msg}")
-            .unwrap(),
+            .template("{spinner:.green} {msg}")?,
     );
 
-    let query = format!("select * from user where username = {:?}", username);
-    let mut response = db.query(query).await?;
-    let users: Vec<User> = response.take(0)?;
+    // Fetch user
+    let user_row = sqlx::query("SELECT id, username, password_hash FROM users WHERE username = ?")
+        .bind(&username)
+        .fetch_optional(db)
+        .await?;
+
     spinner.finish_and_clear();
 
-    //check if user exists
-    if users.is_empty() {
+    let Some(row) = user_row else {
         println!("{}", "No such user found".bright_red());
         return Ok(None);
-    }
+    };
 
-    let user = &users[0];
+    let stored_hash: String = row.get("password_hash");
+    let parsed_hash = PasswordHash::new(&stored_hash)?;
 
-    //verify pass spinner
+    // Password verifying spinner
     let verify_spinner = ProgressBar::new_spinner();
     verify_spinner.set_message("Verifying password...");
     verify_spinner.enable_steady_tick(Duration::from_millis(100));
     verify_spinner.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏✔")
-            .template("{spinner:.cyan} {msg}")
-            .unwrap(),
+            .template("{spinner:.cyan} {msg}")?,
     );
 
-    //parsing and hasing users creds
-    let parsed_hash = PasswordHash::new(&user.password)?;
     let valid = Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
         .is_ok();
+
     verify_spinner.finish_and_clear();
+
     if valid {
         println!(
             "{}",
-            format!("Login Successful! Welcome, {}.", user.username).green()
+            format!("Login Successful! Welcome, {}.", username).green()
         );
-        Ok(Some(user.clone()))
+
+        // Construct User struct correctly
+        Ok(Some(User {
+            id: Some(row.get::<i64, _>("id")),  // i64 matches struct
+            username,
+            password: None, 
+            password_hash: stored_hash,          // store hash, not plaintext
+        }))
     } else {
         println!("{}", "Incorrect password..".red());
-        Ok(None)
-    }
-}
-
-pub async fn login_api(
-    db: &Surreal<Db>,
-    username: &str,
-    password: &str,
-) -> Result<Option<User>> {
-
-    let query = format!("select * from user where username = {:?}", username);
-    let mut response = db.query(query).await?;
-    let users: Vec<User> = response.take(0)?;
-
-    if users.is_empty() {
-        return Ok(None);
-    }
-
-    let user = &users[0];
-
-    let parsed_hash = PasswordHash::new(&user.password)?;
-    let valid = Argon2::default()
-        .verify_password(password.as_bytes(), &parsed_hash)
-        .is_ok();
-
-    if valid {
-        Ok(Some(user.clone()))
-    } else {
         Ok(None)
     }
 }

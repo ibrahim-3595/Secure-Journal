@@ -1,5 +1,5 @@
-use anyhow::{Ok, Result};
 use colored::*;
+use anyhow::{Ok, Result};
 
 pub fn validate_creds(username: &str, password: &str) -> Result<()> {
     // usernmane check

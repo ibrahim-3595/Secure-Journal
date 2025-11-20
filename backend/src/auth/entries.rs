@@ -4,8 +4,6 @@ use dialoguer::Input;
 use surrealdb::Surreal;
 use chrono::Utc;
 use surrealdb::engine::local::Db;
-// use surrealdb::engine::remote::ws::Client;
-
 use crate::models::models::{JournalEntry, User};
 
 pub async fn new_entry(db: &Surreal<Db>, user: &User) -> Result<()> {

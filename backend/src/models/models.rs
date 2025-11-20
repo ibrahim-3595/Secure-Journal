@@ -6,8 +6,10 @@ use surrealdb::sql::Thing;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     pub username: String,
-    pub password: String,
-    pub id: Option<Thing>,
+    pub password: Option<String>,
+    pub id: Option<i64>,
+    //
+    pub password_hash: String, 
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
