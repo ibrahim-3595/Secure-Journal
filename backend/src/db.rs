@@ -1,27 +1,23 @@
 use anyhow::Result;
 use std::fs;
 use surrealdb::Surreal;
-use surrealdb::engine::local::{Db, Mem};
+use surrealdb::engine::local::{Db, Mem, Sqlite};
 
 use crate::models::models::User;
 
-pub async fn connect() -> Result<Surreal<Db>> {
-    // Create an in-memory SurrealDB instance
-    let db = Surreal::new::<Mem>(()).await?;
+use surrealdb::Surreal;
+use surrealdb::engine::local::Sqlite;
 
-    // Use namespace and database
+pub async fn connect() -> Result<Surreal<Sqlite>> {
+    let db = Surreal::new::<Sqlite>("journal.db").await?;
+
     db.use_ns("app").use_db("journal").await?;
 
-    println!("Connected to in-memory SurrealDB");
-
-    // Try loading previous data from file if exists
-    if let Ok(data) = fs::read_to_string("db_backup.json") {
-        db.import(&data).await?;
-        println!("Loaded previous data from db_backup.json");
-    }
+    println!("Connected to local SQLite SurrealDB");
 
     Ok(db)
 }
+
 
 pub async fn save_users(users: &[User]) -> Result<()> {
     let data = serde_json::to_string_pretty(&users)?;
