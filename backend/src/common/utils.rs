@@ -1,136 +1,148 @@
 use colored::Colorize;
 use dialoguer::Select;
-use sqlx::Sqlite;
-
-use std::result::Result::Ok;
-use sqlx::Pool;
+use sqlx::{Pool, Sqlite};
 
 use crate::auth::delete::delete_user;
-use crate::auth::entries::get_entries_for_user;
-use crate::auth::entries::list_entries;
-use crate::auth::entries::{delete_entry, list_users, new_entry, update_entry};
+use crate::auth::entries::{
+    delete_entry, get_entries_for_user, list_entries, list_users, new_entry, update_entry,
+};
 use crate::auth::login::login_flow;
 use crate::auth::signup::signup_flow;
+
 use crate::helpers::export::export_to_md;
 use crate::helpers::import::import_md;
 use crate::models::models::User;
 
 pub async fn main_menu(db: &Pool<Sqlite>) {
-    let mut curr_usr: Option<User> = None;
+    let mut curr_user: Option<User> = None;
 
     loop {
         let options = vec![
-            "Login",                     //0
-            "Create account",            //1
-            "List Users",                //2
-            "Write a new journal entry", //3
-            "View my journal entries",   //4
-            "Update my journal entries", //5
-            "Delete a journal entry",    //6
-            "Delete my account",         //7
-            "Export journal",            //8
-            "Import journal",            //9
-            "Logout",                    //10
-            "Exit",                      //_
+            "Login",
+            "Create account",
+            "List users",
+            "Write new journal entry",
+            "View my entries",
+            "Update an entry",
+            "Delete an entry",
+            "Delete my account",
+            "Export journal",
+            "Import journal",
+            "Logout",
+            "Exit",
         ];
-        let selection = Select::new()
+
+        let choice = Select::new()
             .with_prompt("What would you like to do?")
             .items(&options)
             .default(0)
             .interact()
             .unwrap();
-        
-        let result = match selection {
-            0 => {
-                match login_flow(db).await {
-                    Ok(Some(user)) => {
-                        curr_usr = Some(user.clone());
-                        println!("Logged in as {}", user.username);
-                        Ok(())
-                    }
-                    Ok(None) => {
-                        println!("Login failed");
-                        Ok(())
-                    }
-                    Err(e) => Err(e),
-                }
-            }
-            1 => {
-                signup_flow(db).await
-            }
-            2 => list_users(&db).await,
-            3 => {
-                if let Some(user) = &curr_usr {
-                    new_entry(&db, user).await
-                } else {
-                    println!("{}", "Please login first".red());
-                    Ok(())
-                }
-            }
-            4 => {
-                if let Some(user) = &curr_usr {
-                    list_entries(&db, user).await
-                } else {
-                    println!("{}", "Please login first".red());
-                    Ok(())
-                }
-            }
-            5 => {
-                if let Some(user) = &curr_usr {
-                    update_entry(&db, user).await
-                } else {
-                    println!("{}", "No entry to update".red());
-                    Ok(())
-                }
-            }
-            6 => {
-                if let Some(user) = &curr_usr {
-                    delete_entry(&db, user).await
-                } else {
-                    println!("{}", "Please login first".red());
-                    Ok(())
-                }
-            }
-            7 => {
-                if let Some(user) = &curr_usr {
-                    let _ = delete_user(&db, user).await;
-                    curr_usr = None;
-                } else {
-                    println!("{}", "Please login first".red());
-                }
-                Ok(())
-            }
-            8 => {
-                if let Some(user) = &curr_usr {
-                    let entries_res = get_entries_for_user(&db, user).await;
-                    if let Ok(entries) = entries_res {
-                        let file_name = format!(
-                            "journal_export_{}_{}.md",
-                            user.username,
-                            chrono::Local::now().format("%Y-%m-%d_%H-%M")
-                        );
 
-                        if let Err(e) = export_to_md(&entries, &file_name) {
-                            eprintln!("{}", format!("Export failed: {:?}", e).bright_red());
-                        } else {
-                            println!("{}", format!("Exported to {}", file_name).green());
-                        }
-                    } else {
-                        eprintln!(
-                            "{}",
-                            format!("Failed to fetch entries: {:?}", entries_res.err())
-                                .bright_red()
-                        );
-                    }
+        let result = match choice {
+            // LOGIN
+            0 => match login_flow(db).await {
+                Ok(Some(user)) => {
+                    println!("Logged in as {}", user.username.green());
+                    curr_user = Some(user);
+                    Ok(())
+                }
+                Ok(None) => {
+                    println!("{}", "Login failed".red());
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            },
+
+            // SIGNUP
+            1 => signup_flow(db).await,
+
+            // LIST USERS
+            2 => list_users(db).await,
+
+            // NEW ENTRY
+            3 => match &curr_user {
+                Some(user) => new_entry(db, user).await,
+                None => {
+                    println!("{}", "Please login first".red());
+                    Ok(())
+                }
+            },
+
+            // VIEW ENTRIES
+            4 => match &curr_user {
+                Some(user) => list_entries(db, user).await,
+                None => {
+                    println!("{}", "Please login first".red());
+                    Ok(())
+                }
+            },
+
+            // UPDATE ENTRY
+            5 => match &curr_user {
+                Some(user) => update_entry(db, user).await,
+                None => {
+                    println!("{}", "Please login first".red());
+                    Ok(())
+                }
+            },
+
+            // DELETE ENTRY
+            6 => match &curr_user {
+                Some(user) => delete_entry(db, user).await,
+                None => {
+                    println!("{}", "Please login first".red());
+                    Ok(())
+                }
+            },
+
+            // DELETE USER
+            7 => {
+                if let Some(user) = &curr_user {
+                    let _ = delete_user(db, user).await;
+                    curr_user = None;
                 } else {
                     println!("{}", "Please login first".red());
                 }
                 Ok(())
             }
+
+            // EXPORT
+            8 => {
+    if let Some(user) = &curr_user {
+        let entries_res = get_entries_for_user(&db, user).await;
+
+        match entries_res {
+            Ok(entries) => {
+                let file_name = format!(
+                    "journal_export_{}_{}.md",
+                    user.username,
+                    chrono::Local::now().format("%Y-%m-%d_%H-%M")
+                );
+
+                // FIX: pass &[JournalEntry]
+                if let Err(e) = export_to_md(&entries, &file_name) {
+                    eprintln!("{}", format!("Export failed: {:?}", e).bright_red());
+                } else {
+                    println!("{}", format!("Exported to {}", file_name).green());
+                }
+            }
+            Err(e) => {
+                eprintln!("{}", format!("Failed to fetch entries: {:?}", e).red());
+            }
+        }
+    } else {
+        println!("{}", "Please login first".red());
+    }
+    Ok(())
+}
+
+
+            // IMPORT
             9 => {
                 println!("{}", "Enter path to .md file:".cyan());
                 let mut path = String::new();
-                let _ = std::io::stdin().read_line(&mut path);
+                std::io::stdin().read_line(&mut path).unwrap();
                 let path = path.trim();
 
                 match import_md(path) {
@@ -139,25 +151,31 @@ pub async fn main_menu(db: &Pool<Sqlite>) {
                             println!("{}", format!("Imported: {}", e.title).green());
                         }
                     }
-                    Err(e) => eprintln!("{}", format!("Import failed: {:?}", e).red()),
+                    Err(e) => eprintln!("{}", format!("Import failed: {}", e).red()),
                 }
 
                 Ok(())
             }
+
+            // LOGOUT
             10 => {
-                curr_usr = None;
-                println!("{}", "Logged Out!!".bright_yellow());
+                curr_user = None;
+                println!("{}", "Logged out".yellow());
                 Ok(())
             }
+
+            // EXIT
             11 => {
-                println!("{}", "Good-Bye..! ;)".cyan());
+                println!("{}", "Goodbye!".cyan());
                 return;
             }
+
             _ => Ok(()),
         };
-        
-        if let Err(e) = result {
-            eprintln!("{}", format!("error: {:?}", e).bright_red());
+
+        // Display any top-level errors
+        if let Err(err) = result {
+            eprintln!("{}", format!("Error: {:?}", err).bright_red());
         }
     }
 }

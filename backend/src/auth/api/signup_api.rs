@@ -1,23 +1,29 @@
 use crate::db::DbPool;
+
 use anyhow::{Result, anyhow};
 use bcrypt::{hash, DEFAULT_COST};
 
+/// Signup API: creates user or returns an error if username exists.
 pub async fn signup_api(pool: &DbPool, username: &str, password: &str) -> Result<()> {
-    // Hash password
-    let hashed = hash(password, DEFAULT_COST)?;
+    let hashed = hash(password, DEFAULT_COST)
+        .map_err(|e| anyhow!("bcrypt hashing failed: {}", e))?;
 
-    // Insert user; rely on UNIQUE constraint to fail when username exists
-    let res = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
-        .bind(username)
-        .bind(&hashed)
-        .execute(pool)
-        .await;
+    let result = sqlx::query(
+        "INSERT INTO users (username, password_hash) 
+         VALUES (?, ?)"
+    )
+    .bind(username)
+    .bind(&hashed)
+    .execute(pool)
+    .await;
 
-    match res {
+    match result {
         Ok(_) => Ok(()),
+
         Err(e) => {
-            // Optionally check for constraint error text to return nicer message
-            Err(anyhow!(e))
+            // You can match sqlite error codes here for clearer messages
+            // but I will not change behavior.
+            Err(anyhow!("Failed to create user: {}", e))
         }
     }
 }

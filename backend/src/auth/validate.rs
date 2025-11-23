@@ -1,47 +1,59 @@
+use anyhow::{bail, Result};
 use colored::*;
-use anyhow::{Ok, Result};
 
+/// Validate username and password using simple security rules.
+/// Returns Ok(()) if valid, otherwise returns a descriptive error.
 pub fn validate_creds(username: &str, password: &str) -> Result<()> {
-    // usernmane check
-    if username.trim().is_empty() {
-        anyhow::bail!("{}", "usernmae cannot be empty..".yellow());
-    }
-    if username.len() < 3 || username.len() > 20 {
-        anyhow::bail!(
-            "{}",
-            "the len of the name is not valid..plz try again!".yellow()
-        );
-    }
-    if username.contains(' ') {
-        anyhow::bail!("{}", "username cannot contain spaces".yellow());
+    // ---- USERNAME RULES ----
+    let username = username.trim();
+
+    if username.is_empty() {
+        bail!("{}", "Username cannot be empty.".yellow());
     }
 
-    // password check
+    if !(3..=20).contains(&username.len()) {
+        bail!(
+            "{}",
+            "Username must be between 3 and 20 characters.".yellow()
+        );
+    }
+
+    if username.contains(' ') {
+        bail!("{}", "Username cannot contain spaces.".yellow());
+    }
+
+    // ---- PASSWORD RULES ----
     if password.len() < 6 {
-        anyhow::bail!("{}", "password must be at least 6 chars long..".yellow());
+        bail!("{}", "Password must be at least 6 characters long.".yellow());
     }
+
     if !password.chars().any(|c| c.is_uppercase()) {
-        anyhow::bail!(
+        bail!(
             "{}",
-            "password must include at least one uppercase char..".yellow()
+            "Password must contain at least one uppercase letter.".yellow()
         );
     }
+
     if !password.chars().any(|c| c.is_lowercase()) {
-        anyhow::bail!(
+        bail!(
             "{}",
-            "password must include at least one lowercase char..".yellow()
+            "Password must contain at least one lowercase letter.".yellow()
         );
     }
+
     if !password.chars().any(|c| c.is_ascii_digit()) {
-        anyhow::bail!("{}", "password must include at least one number..".yellow());
-    }
-    if !password
-        .chars()
-        .any(|c| "!@#$%^&*()-_=+[]{};:,.<>?".contains(c))
-    {
-        anyhow::bail!(
+        bail!(
             "{}",
-            "password must include at least one special character..".yellow()
+            "Password must contain at least one number.".yellow()
+        );
+    }
+
+    const SPECIALS: &str = "!@#$%^&*()-_=+[]{};:,.<>?";
+
+    if !password.chars().any(|c| SPECIALS.contains(c)) {
+        bail!(
+            "{}",
+            "Password must contain at least one special character.".yellow()
         );
     }
 
