@@ -1,11 +1,18 @@
 use crate::db::DbPool;
 
 use anyhow::{Result, anyhow};
-use bcrypt::{hash, DEFAULT_COST};
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
+};
 
 pub async fn signup_api(pool: &DbPool, username: &str, password: &str) -> Result<()> {
-    let hashed = hash(password, DEFAULT_COST)
-        .map_err(|e| anyhow!("bcrypt hashing failed: {}", e))?;
+    let salt = SaltString::generate(&mut OsRng);
+
+    let hashed = Argon2::default()
+        .hash_password(password.as_bytes(), &salt)
+        .map_err(|e| anyhow!("argon2 hashing failed: {}", e))?
+        .to_string();
 
     let result = sqlx::query(
         "INSERT INTO users (username, password_hash) 
@@ -18,9 +25,6 @@ pub async fn signup_api(pool: &DbPool, username: &str, password: &str) -> Result
 
     match result {
         Ok(_) => Ok(()),
-
-        Err(e) => {
-            Err(anyhow!("Failed to create user: {}", e))
-        }
+        Err(e) => Err(anyhow!("Failed to create user: {}", e))
     }
 }

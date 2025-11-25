@@ -2,8 +2,9 @@ use crate::db::DbPool;
 use crate::models::models::User;
 
 use anyhow::Result;
-use bcrypt::verify;
 use sqlx::Row;
+
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 
 pub async fn login_api(pool: &DbPool, username: &str, password: &str) -> Result<Option<User>> {
     let row = sqlx::query(
@@ -16,24 +17,27 @@ pub async fn login_api(pool: &DbPool, username: &str, password: &str) -> Result<
     .await?;
 
     let Some(row) = row else {
-        // username not found
         return Ok(None);
     };
 
     let id: i64 = row.get("id");
     let username: String = row.get("username");
-    let password_hash: String = row.get("password_hash");
+    let stored_hash: String = row.get("password_hash");
 
-    let correct = verify(password, &password_hash)
-        .map_err(|e| anyhow::anyhow!("bcrypt verification error: {}", e))?;
+    let parsed = PasswordHash::new(&stored_hash)
+        .map_err(|e| anyhow::anyhow!("Invalid hash in DB: {}", e))?;
 
-    if !correct {
+    let ok = Argon2::default()
+        .verify_password(password.as_bytes(), &parsed)
+        .is_ok();
+
+    if !ok {
         return Ok(None);
     }
 
     Ok(Some(User {
         id,
         username,
-        password_hash,
+        password_hash: stored_hash,
     }))
 }
