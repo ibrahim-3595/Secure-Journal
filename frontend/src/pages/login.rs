@@ -9,11 +9,12 @@ pub fn Login() -> Element {
     let mut password = use_signal(|| String::new());
     let mut error_msg = use_signal(|| String::new());
     let mut loading = use_signal(|| false);
+    let mut show_password = use_signal(|| false);
 
     let handle_login = move |_| {
         let username_val = username();
         let password_val = password();
-        
+
         spawn(async move {
             loading.set(true);
             error_msg.set(String::new());
@@ -28,86 +29,118 @@ pub fn Login() -> Element {
                         error_msg.set(auth_resp.message);
                     }
                 }
-                Err(e) => {
-                    error_msg.set(e);
-                }
+                Err(e) => error_msg.set(e),
             }
-            
+
             loading.set(false);
         });
     };
 
     rsx! {
         div {
-            class: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4",
+            class: "min-h-screen
+                    bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500
+                    flex items-center justify-center p-6",
+
             div {
-                class: "bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md",
+                class: "bg-white/10 backdrop-blur-xl shadow-2xl 
+                        rounded-3xl p-10 w-full max-w-lg
+                        transition-all duration-300 hover:scale-[1.02]",
+
+                // HEADER
                 div {
-                    class: "text-center mb-8",
-                    h1 { 
-                        class: "text-4xl font-bold text-gray-800 mb-2",
-                        "📔 Secure Journal"
+                    class: "text-center mb-10",
+                    h1 {
+                        class: "text-5xl font-extrabold text-white drop-shadow-lg",
+                        "🔐 Secure Journal"
                     }
-                    p { 
-                        class: "text-gray-600",
-                        "Login to access your private journal"
+                    p {
+                        class: "text-white/80 mt-3 text-lg",
+                        "Your encrypted private writing space"
                     }
                 }
 
+                // ERROR BOX
                 if !error_msg().is_empty() {
                     div {
-                        class: "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4",
+                        class: "bg-red-500/20 border border-red-400 text-red-200
+                                px-4 py-3 rounded-xl mb-5 animate-pulse",
                         "{error_msg()}"
                     }
                 }
 
+                // FORM FIELDS
                 div {
-                    class: "space-y-4",
+                    class: "space-y-6",
+
+                    // USERNAME
                     div {
                         label {
-                            class: "block text-sm font-medium text-gray-700 mb-2",
+                            class: "block text-white/80 text-sm font-semibold mb-2",
                             "Username"
                         }
                         input {
-                            class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition",
+                            class: "w-full px-4 py-3 rounded-xl bg-white/20 
+                                    text-white backdrop-blur-lg border border-white/30
+                                    focus:outline-none focus:ring-2 focus:ring-yellow-300
+                                    placeholder-white/50 transition",
                             r#type: "text",
-                            placeholder: "Enter your username",
+                            placeholder: "Enter username",
                             value: "{username()}",
                             oninput: move |e| username.set(e.value().clone()),
                         }
                     }
 
+                    // PASSWORD
                     div {
                         label {
-                            class: "block text-sm font-medium text-gray-700 mb-2",
+                            class: "block text-white/80 text-sm font-semibold mb-2",
                             "Password"
                         }
-                        input {
-                            class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition",
-                            r#type: "password",
-                            placeholder: "Enter your password",
-                            value: "{password()}",
-                            oninput: move |e| password.set(e.value().clone()),
+                        div {
+                            class: "relative",
+                            input {
+                                class: "w-full px-4 py-3 rounded-xl bg-white/20 
+                                        text-white backdrop-blur-lg border border-white/30
+                                        focus:outline-none focus:ring-2 focus:ring-yellow-300
+                                        placeholder-white/50 pr-12 transition",
+                                r#type: if show_password() { "text" } else { "password" },
+                                placeholder: "Enter password",
+                                value: "{password()}",
+                                oninput: move |e| password.set(e.value().clone()),
+                            }
+                            button {
+                                class: "absolute right-3 top-3 text-white/80 hover:text-white",
+                                onclick: move |_| show_password.set(!show_password()),
+                                if show_password() { "🙈" } else { "👁️" }
+                            }
                         }
                     }
 
+                    // LOGIN BUTTON
                     button {
-                        class: "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105",
+                        class: "w-full bg-yellow-300 hover:bg-yellow-400 
+                                text-gray-900 font-bold py-3 rounded-xl
+                                transition transform hover:scale-[1.03]
+                                shadow-lg",
                         disabled: loading(),
                         onclick: handle_login,
+
                         if loading() {
+                            span { class: "animate-spin mr-2 inline-block", "⏳" }
                             "Logging in..."
                         } else {
                             "Login"
                         }
                     }
 
+                    // SIGNUP LINK
                     div {
-                        class: "text-center mt-4",
-                        span { class: "text-gray-600", "Don't have an account? " }
+                        class: "text-center mt-6",
+                        span { class: "text-white/80", "Don't have an account? " }
                         Link {
                             to: Route::Signup {},
-                            class: "text-indigo-600 hover:text-indigo-800 font-semibold",
+                            class: "text-yellow-300 hover:text-yellow-200 font-semibold underline",
                             "Sign up"
                         }
                     }

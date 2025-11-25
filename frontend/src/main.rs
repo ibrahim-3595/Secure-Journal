@@ -10,12 +10,7 @@ use crate::pages::signup::Signup;
 use crate::pages::entries::Entries;
 use crate::pages::new_entry::NewEntry;
 use crate::pages::home::Home;
-// use crate::Code::Home;
 use state::AppState;
-
-//tasks for tomorrow
-// added pages section
-// integrate cloud of file storage option 
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -32,9 +27,9 @@ pub enum Route {
     NewEntry {},
 }
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
+const FAVICON: Asset = asset!("/assets/favicon.ico");
 
 fn main() {
     dioxus::launch(App);

@@ -1,25 +1,18 @@
 [application]
+name = "secure_journal"
+default_platform = "web"
 
 [web.app]
+title = "Secure Journal"
 
-# HTML title tag content
-title = "frontend"
+[web.asset]
+# Copy this folder to /dist/assets/
+include = ["assets"]
 
-# include `assets` in web platform
 [web.resource]
-
-# Additional CSS style files
-style = []
-
-# Additional JavaScript files
+# Tell Dioxus to inject these files into <head>
+style = ["/assets/main.css", "/assets/tailwind.css"]
 script = []
 
 [web.resource.dev]
-
-# Javascript code file
-# serve: [dev-server] only
 script = []
-
-
-[web.asset]
-include = ["src/assets"]

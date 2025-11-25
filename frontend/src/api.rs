@@ -1,6 +1,7 @@
 use crate::models::{AuthRequest, AuthResponse};
 
-const API_BASE_URL: &str = "http://127.0.0.1:3001/api";
+// const API_BASE_URL: &str = "http://127.0.0.1:8000/api";
+const API_BASE_URL: &str = "http://127.0.0.1:8000/api";
 
 pub async fn login(username: String, password: String) -> Result<AuthResponse, String> {
     let client = reqwest::Client::new();
