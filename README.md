@@ -54,7 +54,7 @@ This isn't just a journal — it's a **fortress for your thoughts**.
 | :---------------- | :--------------------- | :----------------------------------------- |
 | 🖥️ Frontend       | **Dioxus**             | Reactive web interface with Rust           |
 | 🌐 Backend API    | **Axum**               | High-performance async HTTP server         |
-| 🗄️ Database      | **SurrealDB**          | Secure, flexible data persistence          |
+| 🗄️ Database       | **SQLite**             | Secure, flexible data persistence          |
 | 🔒 Encryption     | **rpassword + argon2** | Protects journal access and data integrity |
 | ⚙️ Runtime        | **Tokio**              | Async operations & performance             |
 | 🧰 Error Handling | **anyhow**             | Simplified and consistent error reporting  |
@@ -118,10 +118,9 @@ secure-journal/
 │   ├── Cargo.toml
 │   └── src/
 │       ├── main.rs
+├       ├── router.rs
 │       ├── db.rs
-│       ├── api/              # Axum API routes
-│       │   ├── mod.rs
-│       │   └── routes.rs
+│       ├── tests/
 │       ├── auth/
 │       │     ├── api 
 │       │     │     ├── login_api.rs
@@ -131,6 +130,7 @@ secure-journal/
 │       │     │     ├── login_handler.rs
 │       │     │     ├── mod.rs
 │       │     │     ├── signup_handler.rs
+├       ├     ├     ├── types.rs
 │       │     │
 │       │     ├── delete.rs
 │       │     ├── entries.rs
@@ -158,20 +158,23 @@ secure-journal/
 │   │   ├── main.css
 │   │   └── tailwind.css
 │   └── src/
-        ├── components/
-              ├── mod.rs
-              ├── navbar.rs
-        ├── pages/
-              ├── entries.rs
-              ├── home.rs
-              ├── login.rs
-              ├── mod.rs
-              ├── new_entry.rs
-              ├── signup.rs
-        ├── api.rs
-        ├── models.rs
-        ├── state.rs
-        └── main.rs
+│       ├── components/
+│       │     ├── mod.rs
+│       │     ├── navbar.rs
+│       ├── pages/
+│       │     ├── entries.rs
+│       │     ├── home.rs
+│       │     ├── login.rs
+│       │     ├── mod.rs
+│       │     ├── new_entry.rs
+│       │     ├── signup.rs
+│       ├── api.rs
+│       ├── models.rs
+│       ├── models.rs
+│       ├── models.rs
+│       ├── models.rs
+│       ├── state.rs
+│       └── main.rs
 │
 ├── Cargo.toml
 └── README.md
