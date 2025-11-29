@@ -43,3 +43,4 @@ pub async fn start_server(state: Arc<AppState>) {
         .await
         .expect("Server crashed");
 }
+

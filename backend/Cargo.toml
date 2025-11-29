@@ -2,13 +2,14 @@
 name = "backend"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/ibrahim-3595/Secure-Journal"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 
 # Password hashing (Argon2 only)
 argon2 = { version = "0.5", default-features = false, features = ["std", "password-hash"] }
-rand_core = "0.9.3" # correct version used by argon2 SaltString
+rand_core = "0.9.3" 
 
 # CLI UX
 dialoguer = "0.12.0"

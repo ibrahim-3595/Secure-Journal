@@ -3,6 +3,7 @@ name = "frontend"
 version = "0.1.0"
 authors = ["Ibrahim <ibrahim.haji.3595@gmail.com>"]
 edition = "2021"
+repository = "https://github.com/ibrahim-3595/Secure-Journal"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
