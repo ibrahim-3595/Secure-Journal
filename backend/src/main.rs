@@ -28,6 +28,7 @@ async fn main() -> anyhow::Result<()> {
     main_menu(&state.db).await;
 
     Ok(())
+    
 }
 
 pub async fn start_server(state: Arc<AppState>) {
