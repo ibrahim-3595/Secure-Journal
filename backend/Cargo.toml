@@ -36,6 +36,22 @@ tower-http = { version = "0.6", features = ["cors", "trace"] }
 dotenvy = "0.15"
 thiserror = "2.0.17"
 
+
+[package.metadata.deb]
+maintainer = "Your Name <your.email@example.com>"
+copyright = "2025, Your Name <your.email@example.com>"
+license-file = ["../LICENSE", "0"]
+extended-description = """\
+A secure, encrypted journal application with \
+password-protected entries and export capabilities."""
+depends = "$auto"
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/backend", "usr/bin/secure-journal-backend", "755"],
+    ["README.md", "usr/share/doc/secure-journal/README", "644"],
+]
+
 # rusqlite = "0.37.0"
 # sqlite = "0.37.0"
 # rocksdb = "0.24.0"

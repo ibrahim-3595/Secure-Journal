@@ -182,6 +182,50 @@ secure-journal/
 
 ---
 
+## 🛠️ Building from Source
+
+### Quick Builds
+```bash
+# Build for current platform
+cargo build --release
+
+# Build all platforms
+chmod +x build-scripts/build-all.sh
+./build-scripts/build-all.sh
+
+# Create release packages
+chmod +x build-scripts/package-releases.sh
+./build-scripts/package-releases.sh 0.1.0
+
+# Build Debian package
+chmod +x build-scripts/build-deb.sh
+./build-scripts/build-deb.sh 0.1.0
+```
+
+### Platform-Specific
+
+**Windows:**
+```powershell
+.\build-scripts\build-windows.ps1
+```
+
+**Linux:**
+```bash
+chmod +x build-scripts/build-linux.sh
+./build-scripts/build-linux.sh
+```
+
+## 📦 Release Artifacts
+
+After building, you'll find these in `target/releases/v{VERSION}/`:
+- `secure-journal-windows-x64-v{VERSION}.zip`
+- `secure-journal-linux-x64-v{VERSION}.tar.gz`
+- `secure-journal-linux-x64-v{VERSION}.tar.xz`
+- `secure-journal-linux-arm64-v{VERSION}.tar.gz`
+- `backend_{VERSION}_amd64.deb`
+
+---
+
 ## 🎯 Usage
 
 ### CLI Interface
