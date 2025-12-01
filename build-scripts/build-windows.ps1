@@ -2,7 +2,8 @@
 Write-Host "Building for Windows..." -ForegroundColor Green
 
 # Build backend
-cargo build --release --target x86_64-pc-windows-msvc --manifest-path backend/Cargo.toml
+#cargo build --release --target x86_64-pc-windows-msvc --manifest-path backend/Cargo.toml
+cargo build --release --target x86_64-pc-windows-gnu --manifest-path backend/Cargo.toml
 
 # Build frontend (if it's a desktop app)
 cargo build --release --target x86_64-pc-windows-msvc --manifest-path frontend/Cargo.toml
