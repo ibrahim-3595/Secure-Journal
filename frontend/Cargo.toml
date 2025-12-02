@@ -6,18 +6,18 @@ edition = "2021"
 repository = "https://github.com/ibrahim-3595/Secure-Journal"
 
 [dependencies]
-dioxus = { version = "0.6", features = ["router"] }
+dioxus = { version = "0.7.1", features = ["router"] }
 serde = { version = "1", features = ["derive"] }
 async-std = "1"
 
 # Desktop-only dependencies
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-dioxus = { version = "0.6", features = ["desktop", "router"] }
+dioxus = { version = "0.7.1", features = ["desktop", "router"] }
 reqwest = { version = "0.12", features = ["json"] }
 
 # Web-only dependencies  
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-dioxus = { version = "0.6", features = ["web", "router"] }
+dioxus = { version = "0.7.1", features = ["web", "router"] }
 reqwest = { version = "0.12", default-features = false, features = ["json"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
