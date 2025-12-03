@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     steps:
     - uses: actions/checkout@v4
@@ -16,7 +16,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     
-    - name: Install GTK and all dependencies
+    - name: Install ALL GTK dependencies (nuclear option)
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -26,9 +26,17 @@ jobs:
           build-essential \
           pkg-config \
           libglib2.0-dev \
+          libgio2.0-cil-dev \
           libcairo2-dev \
           libpango1.0-dev \
-          libgdk-pixbuf2.0-dev
+          libgdk-pixbuf-2.0-dev \
+          libatk1.0-dev \
+          libsoup2.4-dev \
+          libjavascriptcoregtk-4.0-dev \
+          libwebkit2gtk-4.0-dev
+        
+        # Verify pkg-config can find everything
+        pkg-config --modversion glib-2.0 gobject-2.0 gio-2.0 || true
     
     - name: Build
       run: cargo build --verbose
