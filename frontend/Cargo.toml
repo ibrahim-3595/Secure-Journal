@@ -13,15 +13,16 @@ async-std = "1"
 # Desktop-only dependencies
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 dioxus = { version = "0.7.1", features = ["desktop", "router"] }
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 # Web-only dependencies  
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 dioxus = { version = "0.7.1", features = ["web", "router"] }
-reqwest = { version = "0.12", default-features = false, features = ["json"] }
+# reqwest = { version = "0.12", default-features = false, features = ["json"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-web-sys = "0.3"
+js-sys = "0.3"
+web-sys = { version = "0.3", features=["Window", "Request", "Response", "Document"] }
 
 [profile.release]
 opt-level = "z"
