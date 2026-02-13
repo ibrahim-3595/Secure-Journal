@@ -1,4 +1,6 @@
 use dioxus::prelude::*;
+use crate::models::JournalEntry;
+// use crate::pages::new_entry::{NewEntry};
 use std::time::Duration;
 use crate::{components::navbar::Navbar, Route, state::AppState};
 
@@ -9,8 +11,8 @@ pub fn NewEntry() -> Element {
     let mut title = use_signal(|| String::new());
     let mut content = use_signal(|| String::new());
     let mut tags = use_signal(|| String::new());
-    let mut success = use_signal(|| false);
-    let mut loading = use_signal(|| false);
+    let success = use_signal(|| false);
+    let loading = use_signal(|| false);
 
     // Redirect if not logged in
     if !app_state().logged_in {
@@ -18,47 +20,64 @@ pub fn NewEntry() -> Element {
         return rsx! { div {} };
     }
 
-    let handle_save = move |_| {
-        let title_val = title();
-        let content_val = content();
-        // let tags_val = tags();
+    let handle_save = {
+        let title = title.clone();
+        let content = content.clone();
+        let tags = tags.clone();
+        let mut success = success.clone();
+        let mut loading = loading.clone();
+        let mut app_state = app_state.clone();
+        let nav = nav.clone();
 
-        if title_val.is_empty() || content_val.is_empty() {
-            return;
+        move |_| {
+            if title().is_empty() || content().is_empty() {
+                return;
+            }
+
+            spawn(async move {
+                loading.set(true);
+
+                // Prepare entry
+                let new_entry = JournalEntry {
+                    id: None,
+                    title: title().clone(),
+                    content: content().clone(),
+                    tags: tags().split(',').map(|s| s.trim().to_string()).collect(),
+                    created_at: chrono::Local::now().to_string(),
+                };
+
+                // Save to state (simulate backend)
+                app_state.set(AppState {
+                    logged_in: app_state().logged_in,
+                    username: app_state().username.clone(),
+                    token: app_state().token.clone(),
+                    entries: {
+                        let mut e = app_state().entries.clone();
+                        e.push(new_entry);
+                        e
+                    },
+                });
+
+                // Simulate API delay
+                #[cfg(target_arch = "wasm32")]
+                gloo_timers::future::sleep(Duration::from_secs(1)).await;
+                
+                #[cfg(not(target_arch = "wasm32"))]
+                async_std::task::sleep(Duration::from_secs(1)).await;
+
+                loading.set(false);
+                success.set(true);
+
+                // Redirect after short delay
+                #[cfg(target_arch = "wasm32")]
+                gloo_timers::future::sleep(Duration::from_secs(2)).await;
+                
+                #[cfg(not(target_arch = "wasm32"))]
+                async_std::task::sleep(Duration::from_secs(2)).await;
+
+                nav.push(Route::Entries {});
+            });
         }
-
-        spawn(async move {
-            loading.set(true);
-            
-            // TODO: Save to backend using api::create_entry()
-            // let entry = JournalEntry {
-            //     id: None,
-            //     title: title_val,
-            //     content: content_val,
-            //     tags: tags_val.split(',').map(|s| s.trim().to_string()).collect(),
-            //     created_at: chrono::Local::now().to_string(),
-            // };
-            // match api::create_entry(entry).await { ... }
-            
-            // Simulate API call
-            #[cfg(target_arch = "wasm32")]
-            gloo_timers::future::sleep(Duration::from_secs(1)).await;
-            
-            #[cfg(not(target_arch = "wasm32"))]
-            async_std::task::sleep(Duration::from_secs(1)).await;
-            
-            loading.set(false);
-            success.set(true);
-            
-            // Redirect delay
-            #[cfg(target_arch = "wasm32")]
-            gloo_timers::future::sleep(Duration::from_secs(2)).await;
-            
-            #[cfg(not(target_arch = "wasm32"))]
-            async_std::task::sleep(Duration::from_secs(2)).await;
-            
-            nav.push(Route::Entries {});
-        });
     };
 
     rsx! {
@@ -88,7 +107,7 @@ pub fn NewEntry() -> Element {
                                 "Title"
                             }
                             input {
-                                class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition",
+                                class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 transition",
                                 r#type: "text",
                                 placeholder: "Give your entry a title",
                                 value: "{title()}",
@@ -102,7 +121,7 @@ pub fn NewEntry() -> Element {
                                 "Content"
                             }
                             textarea {
-                                class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition min-h-64",
+                                class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 transition min-h-64",
                                 placeholder: "Write your thoughts...",
                                 value: "{content()}",
                                 oninput: move |e| content.set(e.value().clone()),
@@ -115,7 +134,7 @@ pub fn NewEntry() -> Element {
                                 "Tags (comma-separated)"
                             }
                             input {
-                                class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition",
+                                class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 transition",
                                 r#type: "text",
                                 placeholder: "personal, work, goals",
                                 value: "{tags()}",
