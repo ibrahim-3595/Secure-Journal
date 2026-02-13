@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use std::time::Duration;
 use crate::{api, Route};
 
 #[component]
@@ -30,7 +31,10 @@ pub fn Signup() -> Element {
                 Ok(auth_resp) => {
                     if auth_resp.ok {
                         success_msg.set("Account created! Redirecting to login...".to_string());
-                        async_std::task::sleep(std::time::Duration::from_secs(2)).await;
+                        #[cfg(target_arch = "wasm32")]
+                        gloo_timers::future::sleep(Duration::from_secs(1)).await;
+                        #[cfg(not(target_arch = "wasm32"))]
+                        async_std::task::sleep(Duration::from_secs(1)).await;
                         nav.push(Route::Login {});
                     } else {
                         error_msg.set(auth_resp.message);

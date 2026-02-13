@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use std::time::Duration;
 use crate::{components::navbar::Navbar, Route, state::AppState};
 
 #[component]
@@ -40,12 +41,22 @@ pub fn NewEntry() -> Element {
             // match api::create_entry(entry).await { ... }
             
             // Simulate API call
-            async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+            #[cfg(target_arch = "wasm32")]
+            gloo_timers::future::sleep(Duration::from_secs(1)).await;
+            
+            #[cfg(not(target_arch = "wasm32"))]
+            async_std::task::sleep(Duration::from_secs(1)).await;
             
             loading.set(false);
             success.set(true);
             
-            async_std::task::sleep(std::time::Duration::from_secs(2)).await;
+            // Redirect delay
+            #[cfg(target_arch = "wasm32")]
+            gloo_timers::future::sleep(Duration::from_secs(2)).await;
+            
+            #[cfg(not(target_arch = "wasm32"))]
+            async_std::task::sleep(Duration::from_secs(2)).await;
+            
             nav.push(Route::Entries {});
         });
     };

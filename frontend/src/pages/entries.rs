@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use std::time::Duration;
 use crate::{components::navbar::Navbar, models::JournalEntry, Route, state::AppState};
 
 #[component]
@@ -19,7 +20,10 @@ pub fn Entries() -> Element {
         spawn(async move {
             // TODO: Fetch entries from backend using api::get_entries()
             // For now, showing placeholder data
-            async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+            #[cfg(target_arch = "wasm32")]
+            gloo_timers::future::sleep(Duration::from_secs(1)).await;
+            #[cfg(not(target_arch = "wasm32"))]
+            async_std::task::sleep(Duration::from_secs(1)).await;
             entries.set(vec![
                 JournalEntry {
                     id: Some("1".to_string()),
