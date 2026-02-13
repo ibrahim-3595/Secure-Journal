@@ -4,6 +4,8 @@ members = [
     "frontend",
 ]
 
+resolver = "3"
+
 # The profile that 'dist' will build with
 [profile.dist]
 inherits = "release"
