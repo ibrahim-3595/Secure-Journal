@@ -11,14 +11,18 @@
 
 ### 🎯 Main Interface
 ![Main Interface](assets/secureJ/secureJ1.png)
+![Main Interface](assets/secureJ/SecureJ1GUI.png)
 *Clean code structure with async main function and modular design*
 
 ### 📝 Journal Operations
 ![Journal Operations](assets/secureJ/secureJ2.png)
+![Journal Operations](assets/secureJ/SecureJ2GUI.png)
 *Create accounts, write entries, and manage your journal with ease*
 
 ### ✨ Full Workflow
 ![Complete Workflow](assets/secureJ/secureJ3.png)
+![Complete Workflow](assets/secureJ/SecureJ3GUI.png)
+![Complete Workflow](assets/secureJ/SecureJ4GUI.png)
 *From account creation to entry management - see the full experience*
 
 </div>
