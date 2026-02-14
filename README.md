@@ -101,7 +101,7 @@ cargo run
 
 # Terminal 2 - Start the frontend
 cd frontend
-dx serve
+dx serve --platform web/desktop/android
 ```
 
 The web interface will be available at `http://localhost:8080`
@@ -158,7 +158,7 @@ secure-journal/
 │   ├── Cargo.toml
 │   ├── Dioxus.toml
 │   ├── tailwind.css
-│   ├── assets/
+│   ├── public /
 │   │   ├── main.css
 │   │   └── tailwind.css
 │   └── src/
